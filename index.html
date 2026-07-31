@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<title>ট্রেড লেজার</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Hind+Siliguri:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+  * { box-sizing: border-box; }
+  :root{
+    --bg:#0B0E14; --surface:#12161F; --surface2:#191E29; --border:#232A38;
+    --text:#EAEDF2; --muted:#838B9D; --faint:#4A5163;
+    --profit:#34C795; --loss:#F0555C; --amber:#D6A24C;
+  }
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:'Hind Siliguri','Inter',sans-serif; -webkit-tap-highlight-color:transparent; }
+  .disp{ font-family:'Space Grotesk','Hind Siliguri',sans-serif; }
+  .mono{ font-family:'JetBrains Mono',monospace; font-variant-numeric:tabular-nums; }
+  #app{ display:flex; min-height:100vh; }
+  aside{ width:78px; flex-shrink:0; border-right:1px solid var(--border); padding:14px 8px;
+    display:flex; flex-direction:column; align-items:center; position:sticky; top:0; height:100vh; }
+  @media(min-width:640px){ aside{ width:210px; align-items:stretch; padding:18px 14px; } }
+  .brand{ font-weight:700; font-size:15px; text-align:center; margin-bottom:22px; letter-spacing:-.01em; display:none; }
+  @media(min-width:640px){ .brand{ display:block; text-align:left; } }
+  .brand small{ display:block; color:var(--faint); font-size:10.5px; font-weight:400; margin-top:3px; }
+  nav{ display:flex; flex-direction:column; gap:6px; width:100%; }
+  .navitem{ display:flex; align-items:center; justify-content:center; gap:9px; padding:11px 6px;
+    border-radius:9px; cursor:pointer; color:var(--muted); font-size:13px; font-weight:500; }
+  @media(min-width:640px){ .navitem{ justify-content:flex-start; padding:10px 12px; } }
+  .navitem:active{ background:var(--surface2); }
+  .navitem.active{ color:var(--amber); background:rgba(214,162,76,.1); }
+  .navitem span.lbl{ display:none; }
+  @media(min-width:640px){ .navitem span.lbl{ display:inline; } }
+  main{ flex:1; padding:16px; max-width:920px; }
+  @media(min-width:640px){ main{ padding:28px; } }
+  .h1{ font-size:19px; font-weight:700; margin-bottom:16px; }
+  .card{ background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; }
+  .grid{ display:grid; gap:10px; }
+  .grid-4{ grid-template-columns:repeat(2,1fr); }
+  @media(min-width:560px){ .grid-4{ grid-template-columns:repeat(4,1fr); } }
+  .grid-2{ grid-template-columns:1fr; }
+  @media(min-width:560px){ .grid-2{ grid-template-columns:1fr 1fr; } }
+  .stat .lbl{ font-size:11px; color:var(--muted); letter-spacing:.03em; margin-bottom:6px; }
+  .stat .val{ font-size:21px; font-weight:700; }
+  .stat .sub{ font-size:11px; color:var(--faint); margin-top:3px; }
+  label.f-label{ font-size:11.5px; color:var(--muted); margin-bottom:6px; display:block; font-weight:500; }
+  input, select, textarea{
+    background:var(--surface2); border:1px solid var(--border); color:var(--text);
+    border-radius:8px; padding:10px 12px; font-size:14px; width:100%; outline:none;
+    font-family:inherit;
+  }
+  input:focus, select:focus, textarea:focus{ border-color:var(--amber); }
+  textarea{ resize:vertical; }
+  .btn{ background:var(--amber); color:#14110A; border:none; border-radius:8px; padding:10px 16px;
+    font-weight:600; font-size:13.5px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+  .btn.ghost{ background:transparent; border:1px solid var(--border); color:var(--text); }
+  .btn.loss-text{ color:var(--loss); }
+  .chip{ border:1px solid var(--border); background:var(--surface2); color:var(--muted); border-radius:999px;
+    padding:7px 13px; font-size:12.5px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+  .chip.on{ background:rgba(214,162,76,.14); border-color:var(--amber); color:var(--amber); }
+  .chip.buy.on{ background:rgba(52,199,149,.15); border-color:var(--profit); color:var(--profit); }
+  .chip.sell.on{ background:rgba(240,85,92,.15); border-color:var(--loss); color:var(--loss); }
+  .wrap-chips{ display:flex; flex-wrap:wrap; gap:8px; }
+  .row{ display:flex; gap:8px; align-items:center; }
+  .space-y > * + *{ margin-top:14px; }
+  .mb-4{ margin-bottom:16px; }
+  .mb-3{ margin-bottom:12px; }
+  .flex-between{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .trade-card{ background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin-bottom:10px; }
+  .trade-head{ padding:14px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; gap:10px; }
+  .trade-body{ padding:0 14px 14px; border-top:1px solid var(--border); font-size:13px; }
+  .pill{ font-size:10.5px; padding:2px 8px; border-radius:999px; border:1px solid var(--border); color:var(--muted); }
+  .icon{ width:14px; height:14px; display:inline-block; vertical-align:middle; }
+  .empty{ text-align:center; color:var(--faint); font-size:13px; padding:34px 10px; }
+  .toast{ position:fixed; bottom:18px; left:50%; transform:translateX(-50%); background:var(--surface2);
+    border:1px solid var(--border); border-radius:10px; padding:10px 18px; font-size:13px; z-index:50;
+    box-shadow:0 8px 24px rgba(0,0,0,.4); opacity:0; pointer-events:none; transition:opacity .2s; }
+  .toast.show{ opacity:1; }
+  .savebar{ font-size:10.5px; color:var(--faint); margin-top:8px; }
+  .settings-x{ cursor:pointer; opacity:.7; }
+  ::placeholder{ color:var(--faint); }
+  .bar-row{ margin-bottom:12px; }
+  .bar-row .top{ display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:5px; }
+  .bar-track{ background:var(--surface2); border-radius:4px; height:6px; overflow:hidden; }
+  .bar-fill{ height:100%; }
+  svg.eqchart{ width:100%; height:200px; display:block; }
+
+  /* Signup / profile gate */
+  .gate-screen{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .gate-card{ width:100%; max-width:360px; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:26px 22px; }
+  .gate-title{ font-size:19px; font-weight:700; margin-bottom:4px; }
+  .gate-sub{ font-size:12.5px; color:var(--faint); margin-bottom:20px; line-height:1.5; }
+
+  /* Screenshot upload / thumbnails */
+  .shot-drop{ border:1.5px dashed var(--border); border-radius:10px; padding:18px; text-align:center;
+    color:var(--muted); font-size:12.5px; cursor:pointer; }
+  .shot-drop:hover{ border-color:var(--amber); color:var(--amber); }
+  .shot-preview{ position:relative; display:inline-block; }
+  .shot-preview img{ max-width:100%; max-height:220px; border-radius:9px; display:block; border:1px solid var(--border); }
+  .shot-remove{ position:absolute; top:6px; right:6px; background:rgba(11,14,20,.8); border:1px solid var(--border);
+    border-radius:999px; width:26px; height:26px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text); }
+  .shot-thumb{ width:64px; height:64px; border-radius:8px; object-fit:cover; border:1px solid var(--border); cursor:pointer; flex-shrink:0; }
+  .lightbox{ position:fixed; inset:0; background:rgba(6,8,12,.92); z-index:80; display:flex; align-items:center; justify-content:center;
+    padding:24px; opacity:0; pointer-events:none; transition:opacity .15s; }
+  .lightbox.show{ opacity:1; pointer-events:auto; }
+  .lightbox img{ max-width:100%; max-height:100%; border-radius:8px; }
+  .lightbox-close{ position:absolute; top:18px; right:18px; color:var(--text); cursor:pointer; background:var(--surface2);
+    border:1px solid var(--border); border-radius:999px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; }
+
+  /* AI review */
+  .ai-box{ background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:12px; margin-top:10px; }
+  .ai-box .ai-head{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--amber); font-weight:600; margin-bottom:6px; }
+  .ai-box .ai-text{ font-size:13px; line-height:1.65; color:var(--text); white-space:pre-wrap; }
+  .ai-box .ai-meta{ font-size:10.5px; color:var(--faint); margin-top:8px; }
+  .spin{ width:13px; height:13px; border:2px solid rgba(214,162,76,.25); border-top-color:var(--amber); border-radius:50%; animation:spin .7s linear infinite; display:inline-block; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  /* Progress / mistakes */
+  .insight-item{ display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
+  .insight-item:last-child{ border-bottom:none; }
+  .insight-dot{ width:8px; height:8px; border-radius:50%; margin-top:5px; flex-shrink:0; }
+  .insight-txt{ font-size:12.5px; line-height:1.55; color:var(--text); }
+  .insight-txt b{ color:var(--text); }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ---------- Icons (minimal inline SVG) ----------
+const ICON = {
+  dashboard: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>',
+  plus: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  book: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+  settings: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  x: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  save: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>',
+  reset: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>',
+  pencil: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>',
+  trash: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>',
+  chevronDown: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
+  chevronUp: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>',
+  search: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
+  up: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>',
+  down: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7 17 17M16 7v9H7"/></svg>',
+  trendUp: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
+  trendDown: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>',
+  minus: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg>',
+  image: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>',
+  sparkle: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/><circle cx="12" cy="12" r="2.5"/></svg>',
+  logout: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
+};
+
+// ---------- Profiles (local sign up / switch — NOT cloud accounts) ----------
+// Everything here lives only inside this browser's localStorage. There is no server,
+// so a "profile" just separates data + gives a light local PIN lock; it does not sync
+// between devices or browsers, and is not a security-grade login.
+const PROFILES_KEY = "tj_profiles_v1";
+const ACTIVE_PROFILE_KEY = "tj_active_profile_v1";
+function loadProfiles(){ try{ return JSON.parse(localStorage.getItem(PROFILES_KEY)) || []; }catch(e){ return []; } }
+function saveProfiles(list){ localStorage.setItem(PROFILES_KEY, JSON.stringify(list)); }
+function dataKeyFor(name){ return "tj_data_v1__" + name; }
+
+let session = { profile: null, unlocked: false };
+(function initSession(){
+  // migrate very old single-profile data (before profiles existed) into a default profile
+  const legacy = localStorage.getItem("tj_data_v1");
+  const profiles = loadProfiles();
+  if(legacy && !profiles.length){
+    profiles.push({ name:"আমার একাউন্ট", pin:"" });
+    saveProfiles(profiles);
+    localStorage.setItem(dataKeyFor("আমার একাউন্ট"), legacy);
+  }
+  const active = localStorage.getItem(ACTIVE_PROFILE_KEY);
+  if(active && loadProfiles().some(p=>p.name===active)) session.profile = active;
+})();
+
+// ---------- Data ----------
+const DEFAULT_SETTINGS = {
+  pairs: ["EUR/USD","GBP/USD","USD/JPY","XAU/USD","GBP/JPY","BTC/USD"],
+  concepts: ["লিকুইডিটি সুইপ","অর্ডার ব্লক","ফেয়ার ভ্যালু গ্যাপ","ব্রেক অফ স্ট্রাকচার","সাপ্লাই/ডিমান্ড","সাপোর্ট/রেজিস্ট্যান্স","ট্রেন্ডলাইন ব্রেক"],
+  sessions: ["এশিয়ান সেশন","লন্ডন সেশন","নিউ ইয়র্ক সেশন","লন্ডন-এনওয়াই ওভারল্যাপ"],
+  timeframes: ["M1","M5","M15","M30","H1","H4","D1","W1"],
+  checklist: ["হায়ার টাইমফ্রেম বায়াস কনফার্ম করেছি","স্টপ লস নির্ধারণ করেছি","রিস্ক-রিওয়ার্ড অন্তত ১:২","প্ল্যান অনুযায়ী এন্ট্রি নিয়েছি, ইমপালসিভ না"],
+  dailyLossLimit: '',
+};
+
+let DB = { trades: [], settings: {...DEFAULT_SETTINGS} };
+function loadDB(){
+  if(!session.profile) return { trades: [], settings: {...DEFAULT_SETTINGS} };
+  try{
+    const raw = localStorage.getItem(dataKeyFor(session.profile));
+    if(raw){
+      const parsed = JSON.parse(raw);
+      return { trades: parsed.trades || [], settings: {...DEFAULT_SETTINGS, ...(parsed.settings||{})} };
+    }
+  }catch(e){}
+  return { trades: [], settings: {...DEFAULT_SETTINGS} };
+}
+function saveDB(){
+  if(!session.profile) return;
+  try{
+    localStorage.setItem(dataKeyFor(session.profile), JSON.stringify(DB));
+    const s = document.getElementById('savebar'); if(s) s.textContent = "সেভ হয়েছে ✓ · " + new Date().toLocaleTimeString('bn-BD');
+  }catch(e){
+    const s = document.getElementById('savebar'); if(s) s.textContent = "সেভ ব্যর্থ হয়েছে (স্টোরেজ ভর্তি হয়ে থাকতে পারে)";
+  }
+}
+
+const ui = {
+  tab: 'dashboard',
+  editingId: null,
+  formDirection: 'Buy',
+  formConcepts: [],
+  formScreenshot: null,
+  formChecklist: {},
+  expandedId: null,
+  aiLoadingId: null,
+  summaryLoading: false,
+  filters: { q:'', pair:'', session:'', result:'' },
+};
+
+// Resize/compress an image file to a base64 JPEG so it doesn't blow up localStorage's ~5-10MB limit
+function fileToCompressedDataURL(file, maxW=900, quality=0.72){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxW / img.width);
+        const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function fmtNum(n, d=2){ const v = Number(n); if(Number.isNaN(v)) return "0"; return v.toLocaleString('en-US',{minimumFractionDigits:d, maximumFractionDigits:d}); }
+function resultOf(pnl){ const v = Number(pnl); if(Number.isNaN(v) || v===0) return 'be'; return v>0 ? 'win':'loss'; }
+function esc(s){ return (s??'').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(window.__toastT); window.__toastT=setTimeout(()=>t.classList.remove('show'),2000); }
+
+// ---------- Signup / Login gate ----------
+function gateHTML(){
+  const profiles = loadProfiles();
+  if(session.profile && !session.unlocked){
+    const p = profiles.find(x=>x.name===session.profile);
+    return `
+    <div class="gate-screen"><div class="gate-card">
+      <div class="gate-title disp">স্বাগতম, ${esc(session.profile)}</div>
+      <div class="gate-sub">${p && p.pin ? 'চালিয়ে যেতে আপনার ৪-সংখ্যার পিন দিন' : 'চালিয়ে যেতে নিচে চাপুন'}</div>
+      ${p && p.pin ? `<div class="mb-3"><input type="password" inputmode="numeric" maxlength="4" id="pinInput" placeholder="••••"></div>` : ''}
+      <button class="btn" id="unlockBtn" style="width:100%; justify-content:center;">প্রবেশ করুন</button>
+      <div class="row" style="margin-top:14px; justify-content:center;">
+        <span style="font-size:12px; color:var(--faint); cursor:pointer;" id="switchProfileBtn">অন্য প্রোফাইলে যান</span>
+      </div>
+    </div></div>`;
+  }
+  return `
+  <div class="gate-screen"><div class="gate-card">
+    <div class="gate-title disp">ট্রেড লেজারে সাইন আপ করুন</div>
+    <div class="gate-sub">এই ডেটা শুধু এই ব্রাউজারেই স্থানীয়ভাবে (localStorage) সংরক্ষিত হয় — কোনো সার্ভারে যায় না, তাই ডিভাইস/ব্রাউজার পাল্টালে ডেটা যাবে না। পিন সেট করলে শুধু এই ডিভাইসে একটা হালকা লক হিসেবে কাজ করবে।</div>
+    <div class="space-y">
+      <div><label class="f-label">আপনার নাম</label><input id="suName" placeholder="যেমন: রাহাত"></div>
+      <div><label class="f-label">পিন (ঐচ্ছিক, ৪ সংখ্যা)</label><input id="suPin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></div>
+      <button class="btn" id="signupBtn" style="width:100%; justify-content:center;">${ICON.plus} সাইন আপ / শুরু করুন</button>
+    </div>
+    ${profiles.length ? `<div style="margin-top:16px; border-top:1px solid var(--border); padding-top:14px;">
+      <div class="f-label" style="margin-bottom:8px;">বিদ্যমান প্রোফাইল</div>
+      ${profiles.map(p=>`<div class="chip" style="margin:0 6px 6px 0;" data-login="${esc(p.name)}">${esc(p.name)}</div>`).join('')}
+    </div>` : ''}
+  </div></div>`;
+}
+function bindGateEvents(){
+  const signupBtn = document.getElementById('signupBtn');
+  if(signupBtn){
+    signupBtn.addEventListener('click', ()=>{
+      const name = document.getElementById('suName').value.trim();
+      const pin = document.getElementById('suPin').value.trim();
+      if(!name){ showToast('নাম দিন'); return; }
+      const profiles = loadProfiles();
+      if(profiles.some(p=>p.name===name)){ showToast('এই নামে প্রোফাইল আগে থেকেই আছে, লগইন করুন'); return; }
+      if(pin && !/^\d{4}$/.test(pin)){ showToast('পিন অবশ্যই ৪ সংখ্যার হতে হবে'); return; }
+      profiles.push({ name, pin });
+      saveProfiles(profiles);
+      session.profile = name; session.unlocked = true;
+      localStorage.setItem(ACTIVE_PROFILE_KEY, name);
+      DB = loadDB();
+      ui.tab='dashboard';
+      render();
+    });
+  }
+  document.querySelectorAll('[data-login]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      session.profile = el.dataset.login; session.unlocked = false;
+      localStorage.setItem(ACTIVE_PROFILE_KEY, session.profile);
+      render();
+    });
+  });
+  const unlockBtn = document.getElementById('unlockBtn');
+  if(unlockBtn){
+    unlockBtn.addEventListener('click', ()=>{
+      const profiles = loadProfiles();
+      const p = profiles.find(x=>x.name===session.profile);
+      const pinEl = document.getElementById('pinInput');
+      if(p && p.pin){
+        if(!pinEl || pinEl.value !== p.pin){ showToast('পিন ভুল হয়েছে'); return; }
+      }
+      session.unlocked = true;
+      DB = loadDB();
+      ui.tab='dashboard';
+      render();
+    });
+  }
+  const switchBtn = document.getElementById('switchProfileBtn');
+  if(switchBtn){
+    switchBtn.addEventListener('click', ()=>{
+      session.profile = null; session.unlocked = false;
+      localStorage.removeItem(ACTIVE_PROFILE_KEY);
+      render();
+    });
+  }
+}
+
+// ---------- Render root ----------
+function render(){
+  const app = document.getElementById('app');
+  if(!session.profile || !session.unlocked){
+    app.innerHTML = gateHTML();
+    bindGateEvents();
+    return;
+  }
+  app.innerHTML = `
+    <aside>
+      <div class="brand">ট্রেড লেজার<small id="savebar">স্থানীয়ভাবে সংরক্ষিত</small></div>
+      <nav>
+        ${navItem('dashboard', ICON.dashboard, 'ড্যাশবোর্ড')}
+        ${navItem('new', ICON.plus, 'নতুন ট্রেড')}
+        ${navItem('journal', ICON.book, 'জার্নাল')}
+        ${navItem('settings', ICON.settings, 'সেটিংস')}
+      </nav>
+      <div style="flex:1"></div>
+      <div class="navitem" data-logout="1" style="margin-top:10px;">${ICON.logout}<span class="lbl">${esc(session.profile)} · লগআউট</span></div>
+    </aside>
+    <main id="main"></main>
+    <div class="lightbox" id="lightbox"><div class="lightbox-close" id="lightboxClose">${ICON.x}</div><img id="lightboxImg" src=""></div>
+  `;
+  document.querySelectorAll('.navitem[data-tab]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const t = el.dataset.tab;
+      if(t==='new' && ui.tab!=='new'){ ui.editingId=null; ui.formDirection='Buy'; ui.formConcepts=[]; ui.formScreenshot=null; ui.formChecklist={}; }
+      ui.tab = t; render();
+    });
+  });
+  document.querySelector('[data-logout]').addEventListener('click', ()=>{
+    session.unlocked = false;
+    render();
+  });
+  document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+  document.getElementById('lightbox').addEventListener('click', (e)=>{ if(e.target.id==='lightbox') closeLightbox(); });
+  renderMain();
+}
+function openLightbox(src){
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lightboxImg').src = src;
+  lb.classList.add('show');
+}
+function closeLightbox(){ document.getElementById('lightbox').classList.remove('show'); }
+function navItem(tab, icon, label){
+  return `<div class="navitem ${ui.tab===tab?'active':''}" data-tab="${tab}">${icon}<span class="lbl">${label}</span></div>`;
+}
+
+function renderMain(){
+  const main = document.getElementById('main');
+  if(ui.tab==='dashboard') main.innerHTML = dashboardHTML();
+  if(ui.tab==='new') main.innerHTML = formHTML();
+  if(ui.tab==='journal') main.innerHTML = journalShellHTML();
+  if(ui.tab==='settings') main.innerHTML = settingsHTML();
+
+  if(ui.tab==='new') bindFormEvents();
+  if(ui.tab==='journal'){ bindJournalFilterEvents(); renderTradesList(); }
+  if(ui.tab==='settings') bindSettingsEvents();
+  if(ui.tab==='dashboard') bindDashboardEvents();
+}
+function bindDashboardEvents(){
+  const btn = document.getElementById('aiSummaryBtn');
+  if(btn) btn.addEventListener('click', requestAiSummary);
+}
+
+// ---------- Dashboard ----------
+function computeStats(){
+  const trades = DB.trades;
+  const total = trades.length;
+  const wins = trades.filter(t=>resultOf(t.pnl)==='win').length;
+  const losses = trades.filter(t=>resultOf(t.pnl)==='loss').length;
+  const totalPnl = trades.reduce((s,t)=>s+(Number(t.pnl)||0),0);
+  const totalPoints = trades.reduce((s,t)=>s+(Number(t.points)||0),0);
+  const winRate = total ? (wins/total)*100 : 0;
+  // max drawdown: largest peak-to-trough drop on the running equity curve
+  const points = equityCurvePoints();
+  let peak = 0, maxDD = 0;
+  points.forEach(p=>{ peak = Math.max(peak, p.equity); maxDD = Math.max(maxDD, peak - p.equity); });
+  // average R: mean of achieved risk-multiples across trades where entry/SL/exit were all filled in
+  const rTrades = trades.filter(t=> t.rAchieved !== null && t.rAchieved !== undefined);
+  const avgR = rTrades.length ? rTrades.reduce((s,t)=>s+t.rAchieved,0)/rTrades.length : null;
+  return {total, wins, losses, totalPnl, totalPoints, winRate, maxDD, avgR, rCount: rTrades.length};
+}
+function equityCurvePoints(){
+  const sorted = [...DB.trades].sort((a,b)=> (a.date+a.time).localeCompare(b.date+b.time));
+  let running = 0;
+  return sorted.map((t,i)=>{ running += Number(t.pnl)||0; return {idx:i+1, equity: running}; });
+}
+function conceptBreakdown(){
+  const map = {};
+  DB.trades.forEach(t=>{ (t.concepts||[]).forEach(c=>{ map[c]=(map[c]||0)+(Number(t.pnl)||0); }); });
+  return Object.entries(map).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).slice(0,6);
+}
+// Groups trades into ISO-ish weeks (by Sun-based date string) and computes win rate + pnl per week, last 8 weeks
+function weeklyProgress(){
+  if(!DB.trades.length) return [];
+  const byWeek = {};
+  DB.trades.forEach(t=>{
+    if(!t.date) return;
+    const d = new Date(t.date + 'T00:00:00');
+    if(isNaN(d)) return;
+    const weekStart = new Date(d);
+    weekStart.setDate(d.getDate() - d.getDay());
+    const key = weekStart.toISOString().slice(0,10);
+    if(!byWeek[key]) byWeek[key] = { key, trades:[] };
+    byWeek[key].trades.push(t);
+  });
+  const weeks = Object.values(byWeek).sort((a,b)=>a.key.localeCompare(b.key)).slice(-8);
+  return weeks.map(w=>{
+    const wins = w.trades.filter(t=>resultOf(t.pnl)==='win').length;
+    const winRate = w.trades.length ? (wins/w.trades.length)*100 : 0;
+    const pnl = w.trades.reduce((s,t)=>s+(Number(t.pnl)||0),0);
+    const label = new Date(w.key+'T00:00:00').toLocaleDateString('bn-BD',{day:'numeric',month:'short'});
+    return { label, winRate, pnl, count: w.trades.length };
+  });
+}
+function svgWeeklyBars(weeks){
+  if(weeks.length < 2) return `<div class="empty">উন্নতির ধারা দেখাতে আরও কয়েক সপ্তাহের ট্রেড দরকার</div>`;
+  return `<div style="display:flex; align-items:flex-end; gap:8px; height:110px;">
+    ${weeks.map(w=>{
+      const h = Math.max(4, (w.winRate/100)*100);
+      const color = w.winRate>=50 ? 'var(--profit)' : 'var(--loss)';
+      return `<div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;">
+        <div class="mono" style="font-size:10px; color:var(--faint); margin-bottom:4px;">${fmtNum(w.winRate,0)}%</div>
+        <div style="width:100%; max-width:30px; height:${h}px; background:${color}; border-radius:4px 4px 0 0;"></div>
+        <div style="font-size:10px; color:var(--faint); margin-top:6px;">${w.label}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+// Detects recurring, data-backed patterns worth flagging — not opinions, just the numbers.
+function detectMistakes(){
+  const trades = DB.trades;
+  const insights = [];
+  if(trades.length < 3) return insights;
+
+  // 1) trades taken without a stop loss
+  const noSL = trades.filter(t=> !t.sl || t.sl==='');
+  if(noSL.length){
+    const pnl = noSL.reduce((s,t)=>s+(Number(t.pnl)||0),0);
+    insights.push({ level: pnl<0?'loss':'amber', text: `<b>${noSL.length}টি ট্রেডে</b> কোনো স্টপ লস দেওয়া হয়নি (মোট ফলাফল: ${pnl>=0?'+':''}${fmtNum(pnl)})। এটা ঝুঁকি ব্যবস্থাপনায় একটা কমন দুর্বলতা।` });
+  }
+  // 2) trades with no logic written (poor journaling)
+  const noLogic = trades.filter(t=> !t.logic || !t.logic.trim());
+  if(noLogic.length >= 2){
+    insights.push({ level:'amber', text: `<b>${noLogic.length}টি ট্রেডে</b> এন্ট্রির লজিক লেখা হয়নি — কারণ ছাড়া নেওয়া ট্রেড পরে বিশ্লেষণ করা কঠিন।` });
+  }
+  // 3) concept win-rate weak spots (min 3 trades)
+  const conceptStats = {};
+  trades.forEach(t=> (t.concepts||[]).forEach(c=>{
+    conceptStats[c] = conceptStats[c] || {wins:0,total:0};
+    conceptStats[c].total++; if(resultOf(t.pnl)==='win') conceptStats[c].wins++;
+  }));
+  Object.entries(conceptStats).filter(([,v])=>v.total>=3).forEach(([c,v])=>{
+    const wr = (v.wins/v.total)*100;
+    if(wr < 35) insights.push({ level:'loss', text: `<b>"${esc(c)}"</b> কনসেপ্ট দিয়ে নেওয়া ${v.total}টি ট্রেডের মধ্যে উইনরেট মাত্র ${fmtNum(wr,0)}% — এই সেটআপ আবার যাচাই করা দরকার।` });
+  });
+  // 4) session win-rate weak spots (min 3 trades)
+  const sessStats = {};
+  trades.forEach(t=>{ if(!t.session) return; sessStats[t.session]=sessStats[t.session]||{wins:0,total:0}; sessStats[t.session].total++; if(resultOf(t.pnl)==='win') sessStats[t.session].wins++; });
+  Object.entries(sessStats).filter(([,v])=>v.total>=3).forEach(([s,v])=>{
+    const wr = (v.wins/v.total)*100;
+    if(wr < 35) insights.push({ level:'loss', text: `<b>${esc(s)}</b>-এ আপনার উইনরেট মাত্র ${fmtNum(wr,0)}% (${v.total}টি ট্রেড) — এই সময়ে ট্রেড কমানো বা রুল আরও কড়া করা যেতে পারে।` });
+  });
+  // 5) overtrading / revenge-trading days: 3+ trades in one day ending net negative
+  const byDay = {};
+  trades.forEach(t=>{ if(!t.date) return; byDay[t.date]=byDay[t.date]||[]; byDay[t.date].push(t); });
+  const badDays = Object.entries(byDay).filter(([,list])=> list.length>=3 && list.reduce((s,t)=>s+(Number(t.pnl)||0),0) < 0);
+  if(badDays.length){
+    insights.push({ level:'loss', text: `<b>${badDays.length} দিনে</b> ৩+ ট্রেড নিয়েও দিনশেষে নেট লস হয়েছে — ওভারট্রেডিং বা রিভেঞ্জ ট্রেডিং হচ্ছে কিনা খেয়াল করুন।` });
+  }
+  // 6) improving/declining trend based on last vs previous chunk of trades
+  const sorted = [...trades].sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  if(sorted.length >= 10){
+    const half = Math.floor(sorted.length/2);
+    const firstHalf = sorted.slice(0, half), secondHalf = sorted.slice(half);
+    const wrOf = arr => { const w=arr.filter(t=>resultOf(t.pnl)==='win').length; return arr.length? (w/arr.length)*100 : 0; };
+    const wr1 = wrOf(firstHalf), wr2 = wrOf(secondHalf);
+    const diff = wr2 - wr1;
+    if(Math.abs(diff) >= 5){
+      insights.push({ level: diff>0?'profit':'loss', text: diff>0
+        ? `প্রথমার্ধের তুলনায় সাম্প্রতিক ট্রেডগুলোতে উইনরেট <b>${fmtNum(diff,0)}%</b> বেড়েছে — উন্নতি হচ্ছে।`
+        : `প্রথমার্ধের তুলনায় সাম্প্রতিক ট্রেডগুলোতে উইনরেট <b>${fmtNum(Math.abs(diff),0)}%</b> কমেছে — সাম্প্রতিক ট্রেডগুলো আবার পর্যালোচনা করুন।` });
+    }
+  }
+  return insights;
+}
+function svgEquityChart(points){
+  if(points.length < 2){
+    return `<div class="empty">এখনো পর্যাপ্ত ট্রেড নেই একটি গ্রাফ দেখানোর জন্য</div>`;
+  }
+  const w = 600, h = 200, pad = 24;
+  const xs = points.map(p=>p.idx), ys = points.map(p=>p.equity);
+  const minY = Math.min(0, ...ys), maxY = Math.max(0, ...ys);
+  const rangeY = (maxY - minY) || 1;
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const rangeX = (maxX - minX) || 1;
+  const sx = x => pad + ((x-minX)/rangeX) * (w-2*pad);
+  const sy = y => h-pad - ((y-minY)/rangeY) * (h-2*pad);
+  const path = points.map((p,i)=> (i===0?'M':'L') + sx(p.idx).toFixed(1) + ',' + sy(p.equity).toFixed(1)).join(' ');
+  const zeroY = sy(0).toFixed(1);
+  const last = points[points.length-1];
+  const lastColor = last.equity>=0 ? 'var(--profit)' : 'var(--loss)';
+  return `<svg class="eqchart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <line x1="${pad}" y1="${zeroY}" x2="${w-pad}" y2="${zeroY}" stroke="#232A38" stroke-dasharray="4 4"/>
+    <path d="${path}" fill="none" stroke="#D6A24C" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${sx(last.idx)}" cy="${sy(last.equity)}" r="4" fill="${lastColor}"/>
+  </svg>`;
+}
+function dashboardHTML(){
+  const s = computeStats();
+  const points = equityCurvePoints();
+  const cb = conceptBreakdown();
+  const maxAbs = Math.max(1, ...cb.map(([,v])=>Math.abs(v)));
+  const weeks = weeklyProgress();
+  const insights = detectMistakes();
+  const dotColor = lvl => lvl==='loss' ? 'var(--loss)' : lvl==='profit' ? 'var(--profit)' : 'var(--amber)';
+  const limit = Number(DB.settings.dailyLossLimit);
+  let limitBanner = '';
+  if(limit > 0){
+    const today = new Date().toISOString().slice(0,10);
+    const todayPnl = DB.trades.filter(t=>t.date===today).reduce((s,t)=>s+(Number(t.pnl)||0),0);
+    if(todayPnl <= -Math.abs(limit)){
+      limitBanner = `<div class="card mb-4" style="border-color:var(--loss);"><div style="font-size:12.5px; color:var(--loss); font-weight:600;">⚠ আজকের দৈনিক লস লিমিট (${fmtNum(limit)}) ক্রস হয়েছে (আজকের ফলাফল: ${fmtNum(todayPnl)})। আজ আর নতুন ট্রেড না নেওয়াই ভালো।</div></div>`;
+    }
+  }
+  return `
+    <div class="h1 disp">ড্যাশবোর্ড</div>
+    ${limitBanner}
+    <div class="grid grid-4 mb-4">
+      <div class="card stat"><div class="lbl">মোট পিএনএল</div><div class="val mono" style="color:${s.totalPnl>=0?'var(--profit)':'var(--loss)'}">${s.totalPnl>=0?'+':''}${fmtNum(s.totalPnl)}</div></div>
+      <div class="card stat"><div class="lbl">উইন রেট</div><div class="val mono">${fmtNum(s.winRate,1)}%</div><div class="sub">${s.wins}W / ${s.losses}L</div></div>
+      <div class="card stat"><div class="lbl">মোট ট্রেড</div><div class="val mono">${s.total}</div></div>
+      <div class="card stat"><div class="lbl">মোট পয়েন্ট</div><div class="val mono" style="color:${s.totalPoints>=0?'var(--profit)':'var(--loss)'}">${s.totalPoints>=0?'+':''}${fmtNum(s.totalPoints,1)}</div></div>
+    </div>
+    <div class="grid grid-2 mb-4">
+      <div class="card stat"><div class="lbl">ম্যাক্স ড্রডাউন</div><div class="val mono" style="color:var(--loss)">${s.maxDD>0?'-':''}${fmtNum(s.maxDD)}</div><div class="sub">ইকুইটি কার্ভের সর্বোচ্চ পতন</div></div>
+      <div class="card stat"><div class="lbl">গড় R (রিস্ক-মাল্টিপল)</div><div class="val mono" style="color:${s.avgR===null?'var(--faint)':s.avgR>=0?'var(--profit)':'var(--loss)'}">${s.avgR===null?'—':(s.avgR>=0?'+':'')+fmtNum(s.avgR,2)+'R'}</div><div class="sub">${s.rCount} টি ট্রেডে SL দেওয়া ছিল বলে হিসাব করা গেছে</div></div>
+    </div>
+    <div class="card mb-4">
+      <div class="lbl f-label" style="margin-bottom:10px;">ইকুইটি কার্ভ</div>
+      ${svgEquityChart(points)}
+    </div>
+    <div class="card mb-4">
+      <div class="lbl f-label" style="margin-bottom:10px;">সাপ্তাহিক উন্নতি/অবনতি (উইন রেট %)</div>
+      ${svgWeeklyBars(weeks)}
+    </div>
+    <div class="card mb-4">
+      <div class="lbl f-label" style="margin-bottom:12px;">কনসেপ্ট অনুযায়ী পারফরম্যান্স</div>
+      ${cb.length ? cb.map(([c,v])=>`
+        <div class="bar-row">
+          <div class="top"><span style="color:var(--muted)">${esc(c)}</span><span class="mono" style="color:${v>=0?'var(--profit)':'var(--loss)'}">${v>=0?'+':''}${fmtNum(v)}</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${(Math.abs(v)/maxAbs)*100}%; background:${v>=0?'var(--profit)':'var(--loss)'}"></div></div>
+        </div>
+      `).join('') : `<div class="empty">কোনো কনসেপ্ট ডেটা নেই</div>`}
+    </div>
+    <div class="card mb-4">
+      <div class="lbl f-label" style="margin-bottom:6px;">কমন মিসটেক ও প্যাটার্ন</div>
+      <div style="font-size:11px; color:var(--faint); margin-bottom:8px;">আপনার ডেটা থেকে স্বয়ংক্রিয়ভাবে খুঁজে বের করা — প্রত্যেকটা ট্রেড যোগ করলে এটা আরও নির্ভুল হবে।</div>
+      ${insights.length ? insights.map(i=>`
+        <div class="insight-item">
+          <div class="insight-dot" style="background:${dotColor(i.level)}"></div>
+          <div class="insight-txt">${i.text}</div>
+        </div>
+      `).join('') : `<div class="empty">এখনো প্যাটার্ন ধরার মতো যথেষ্ট ট্রেড নেই (কমপক্ষে ৩টা ট্রেড যোগ করুন)</div>`}
+    </div>
+    <div class="card">
+      <div class="flex-between" style="margin-bottom:8px;">
+        <div class="lbl f-label" style="margin-bottom:0;">এআই সাপ্তাহিক সামারি</div>
+        <button class="btn ghost" id="aiSummaryBtn" style="font-size:12px; padding:7px 12px; ${ui.summaryLoading?'opacity:.6; pointer-events:none;':''}">
+          ${ui.summaryLoading ? `<span class="spin"></span> তৈরি হচ্ছে…` : `${ICON.sparkle} সামারি তৈরি করুন`}
+        </button>
+      </div>
+      ${DB.settings.lastSummary ? `
+        <div class="ai-box" style="margin-top:0;">
+          <div class="ai-head">${ICON.sparkle} সাম্প্রতিক ট্রেডের সামারি ও অ্যাকশন আইটেম</div>
+          <div class="ai-text">${esc(DB.settings.lastSummary)}</div>
+          ${DB.settings.lastSummaryAt ? `<div class="ai-meta">${new Date(DB.settings.lastSummaryAt).toLocaleString('bn-BD')}</div>` : ''}
+        </div>
+      ` : `<div class="empty">সর্বশেষ ২০টা ট্রেড একসাথে বিশ্লেষণ করে বাংলায় একটা সামারি ও করণীয় দেবে।</div>`}
+    </div>
+  `;
+}
+
+// ---------- New / Edit Trade Form ----------
+function formHTML(){
+  const editing = ui.editingId ? DB.trades.find(t=>t.id===ui.editingId) : null;
+  const f = editing || { date:new Date().toISOString().slice(0,10), time:new Date().toTimeString().slice(0,5),
+    pair:'', session:'', timeframe:'', entry:'', exit:'', sl:'', tp:'', points:'', pnl:'', logic:'', notes:'' };
+  if(editing){ ui.formDirection = editing.direction; ui.formConcepts = [...(editing.concepts||[])]; ui.formScreenshot = editing.screenshot || null; ui.formChecklist = {...(editing.checklist||{})}; }
+  const set = DB.settings;
+  const limit = Number(set.dailyLossLimit);
+  let limitWarning = '';
+  if(limit > 0){
+    const today = new Date().toISOString().slice(0,10);
+    const todayPnl = DB.trades.filter(t=>t.date===today).reduce((s,t)=>s+(Number(t.pnl)||0),0);
+    if(todayPnl <= -Math.abs(limit)){
+      limitWarning = `<div class="card mb-4" style="border-color:var(--loss);">
+        <div style="font-size:12.5px; color:var(--loss); font-weight:600;">⚠ আজকের দৈনিক লস লিমিট (${fmtNum(limit)}) ইতিমধ্যে ক্রস হয়েছে (আজকের ফলাফল: ${fmtNum(todayPnl)}). নতুন ট্রেড নেওয়ার আগে একটু থামুন, চাইলে কাল আবার চেষ্টা করুন।</div>
+      </div>`;
+    }
+  }
+  return `
+    <div class="flex-between mb-4">
+      <div class="h1 disp" style="margin-bottom:0">${editing?'ট্রেড এডিট করুন':'নতুন ট্রেড'}</div>
+      <div class="row">
+        <button class="btn ghost" id="cancelBtn">${ICON.x} বাতিল</button>
+        <button class="btn" id="saveBtn">${ICON.save} সংরক্ষণ করুন</button>
+      </div>
+    </div>
+    ${limitWarning}
+
+    <div class="card mb-4 space-y">
+      <div class="grid grid-4">
+        <div><label class="f-label">তারিখ</label><input type="date" id="f_date" value="${esc(f.date)}"></div>
+        <div><label class="f-label">সময়</label><input type="time" id="f_time" value="${esc(f.time)}"></div>
+        <div><label class="f-label">পেয়ার</label>
+          <select id="f_pair"><option value="">নির্বাচন করুন</option>${set.pairs.map(p=>`<option value="${esc(p)}" ${f.pair===p?'selected':''}>${esc(p)}</option>`).join('')}</select>
+        </div>
+        <div><label class="f-label">দিক</label>
+          <div class="row">
+            <div class="chip buy ${ui.formDirection==='Buy'?'on':''}" id="dirBuy">${ICON.up} বাই</div>
+            <div class="chip sell ${ui.formDirection==='Sell'?'on':''}" id="dirSell">${ICON.down} সেল</div>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-2">
+        <div><label class="f-label">সেশন</label>
+          <select id="f_session"><option value="">নির্বাচন করুন</option>${set.sessions.map(s=>`<option value="${esc(s)}" ${f.session===s?'selected':''}>${esc(s)}</option>`).join('')}</select>
+        </div>
+        <div><label class="f-label">টাইমফ্রেম</label>
+          <select id="f_timeframe"><option value="">নির্বাচন করুন</option>${set.timeframes.map(t=>`<option value="${esc(t)}" ${f.timeframe===t?'selected':''}>${esc(t)}</option>`).join('')}</select>
+        </div>
+      </div>
+      <div>
+        <label class="f-label">কনসেপ্ট / স্ট্র্যাটেজি (একাধিক নির্বাচন করা যাবে)</label>
+        <div class="wrap-chips" id="conceptChips">
+          ${set.concepts.map(c=>`<div class="chip ${ui.formConcepts.includes(c)?'on':''}" data-concept="${esc(c)}">${esc(c)}</div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4 space-y">
+      <label class="f-label" style="margin-bottom:0">প্রাইস ও ফলাফল</label>
+      <div class="grid grid-4">
+        <div><label class="f-label">এন্ট্রি প্রাইস</label><input type="number" step="any" class="mono" id="f_entry" value="${esc(f.entry)}" placeholder="0.00"></div>
+        <div><label class="f-label">এক্সিট প্রাইস</label><input type="number" step="any" class="mono" id="f_exit" value="${esc(f.exit)}" placeholder="0.00"></div>
+        <div><label class="f-label">স্টপ লস</label><input type="number" step="any" class="mono" id="f_sl" value="${esc(f.sl)}" placeholder="0.00"></div>
+        <div><label class="f-label">টেক প্রফিট</label><input type="number" step="any" class="mono" id="f_tp" value="${esc(f.tp)}" placeholder="0.00"></div>
+      </div>
+      <div class="grid grid-2">
+        <div>
+          <label class="f-label">পয়েন্ট মুভ</label>
+          <div class="row">
+            <input type="number" step="any" class="mono" id="f_points" value="${esc(f.points)}" placeholder="0">
+            <button type="button" class="btn ghost" id="autoCalcBtn" style="font-size:12px; white-space:nowrap;">${ICON.reset} অটো</button>
+          </div>
+        </div>
+        <div><label class="f-label">পিএনএল (P&L)</label><input type="number" step="any" class="mono" id="f_pnl" value="${esc(f.pnl)}" placeholder="0.00"></div>
+      </div>
+      <div id="rrDisplay" class="mono" style="font-size:12px; color:var(--muted); margin-top:2px;"></div>
+    </div>
+
+    <div class="card space-y">
+      <div><label class="f-label">এন্ট্রির লজিক / কারণ — কেন এই ট্রেড নিয়েছিলেন</label>
+        <textarea id="f_logic" rows="4" placeholder="যেমন: H4 তে অর্ডার ব্লক থেকে বাউন্স, M15 তে লিকুইডিটি সুইপের পর BOS কনফার্ম হয়েছিল…">${esc(f.logic)}</textarea>
+      </div>
+      <div><label class="f-label">অতিরিক্ত নোট</label><textarea id="f_notes" rows="2" placeholder="ঐচ্ছিক">${esc(f.notes)}</textarea></div>
+    </div>
+
+    <div class="card mb-4">
+      <label class="f-label" style="margin-bottom:10px;">প্রি-ট্রেড চেকলিস্ট (সেটিংস থেকে কাস্টমাইজ করা যায়)</label>
+      <div class="space-y" id="checklistWrap">
+        ${set.checklist.map((item,i)=>`
+          <label class="row" style="gap:9px; cursor:pointer;">
+            <input type="checkbox" data-check="${esc(item)}" ${ui.formChecklist[item]?'checked':''} style="width:auto; accent-color:var(--amber);">
+            <span style="font-size:13px;">${esc(item)}</span>
+          </label>
+        `).join('') || `<div style="color:var(--faint); font-size:12.5px;">সেটিংসে গিয়ে চেকলিস্ট আইটেম যোগ করুন</div>`}
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+      <label class="f-label">চার্ট স্ক্রিনশট (ঐচ্ছিক)</label>
+      <input type="file" accept="image/*" id="f_shotInput" style="display:none;">
+      ${ui.formScreenshot ? `
+        <div class="shot-preview">
+          <img src="${ui.formScreenshot}">
+          <div class="shot-remove" id="shotRemoveBtn">${ICON.x}</div>
+        </div>
+      ` : `
+        <div class="shot-drop" id="shotDrop">${ICON.image}<div style="margin-top:6px;">এই ট্রেডের চার্ট স্ক্রিনশট আপলোড করতে ট্যাপ করুন</div></div>
+      `}
+    </div>
+  `;
+}
+function bindFormEvents(){
+  const shotInput = document.getElementById('f_shotInput');
+  const shotDrop = document.getElementById('shotDrop');
+  if(shotDrop) shotDrop.addEventListener('click', ()=> shotInput.click());
+  if(shotInput){
+    shotInput.addEventListener('change', async (e)=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      try{
+        ui.formScreenshot = await fileToCompressedDataURL(file);
+        renderMain(); bindFormEvents();
+      }catch(err){ showToast('স্ক্রিনশট লোড করা যায়নি'); }
+    });
+  }
+  const shotRemoveBtn = document.getElementById('shotRemoveBtn');
+  if(shotRemoveBtn){
+    shotRemoveBtn.addEventListener('click', ()=>{ ui.formScreenshot = null; renderMain(); bindFormEvents(); });
+  }
+  document.getElementById('cancelBtn').addEventListener('click', ()=>{ ui.tab='journal'; ui.editingId=null; render(); });
+  document.querySelectorAll('[data-check]').forEach(cb=>{
+    cb.addEventListener('change', ()=>{ ui.formChecklist[cb.dataset.check] = cb.checked; });
+  });
+  function updateRRDisplay(){
+    const en = Number(document.getElementById('f_entry').value);
+    const sl = Number(document.getElementById('f_sl').value);
+    const tp = Number(document.getElementById('f_tp').value);
+    const el = document.getElementById('rrDisplay');
+    if(!el) return;
+    const risk = Math.abs(en - sl);
+    if(!en || !sl || !risk){ el.textContent = ''; return; }
+    if(tp){
+      const reward = Math.abs(tp - en);
+      el.textContent = `রিস্ক-রিওয়ার্ড (SL/TP অনুযায়ী): 1 : ${(reward/risk).toFixed(2)}`;
+    } else {
+      el.textContent = `রিস্ক (এন্ট্রি-SL): ${risk.toFixed(4)}`;
+    }
+  }
+  ['f_entry','f_sl','f_tp'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('input', updateRRDisplay);
+  });
+  updateRRDisplay();
+  document.getElementById('dirBuy').addEventListener('click', ()=>{ ui.formDirection='Buy'; document.getElementById('dirBuy').classList.add('on'); document.getElementById('dirSell').classList.remove('on'); });
+  document.getElementById('dirSell').addEventListener('click', ()=>{ ui.formDirection='Sell'; document.getElementById('dirSell').classList.add('on'); document.getElementById('dirBuy').classList.remove('on'); });
+  document.querySelectorAll('#conceptChips .chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      const c = chip.dataset.concept;
+      const idx = ui.formConcepts.indexOf(c);
+      if(idx>-1){ ui.formConcepts.splice(idx,1); chip.classList.remove('on'); }
+      else{ ui.formConcepts.push(c); chip.classList.add('on'); }
+    });
+  });
+  document.getElementById('autoCalcBtn').addEventListener('click', ()=>{
+    const en = Number(document.getElementById('f_entry').value);
+    const ex = Number(document.getElementById('f_exit').value);
+    if(Number.isNaN(en) || Number.isNaN(ex)) return;
+    const sign = ui.formDirection==='Buy' ? 1 : -1;
+    const pts = (ex-en)*sign;
+    document.getElementById('f_points').value = pts % 1 === 0 ? pts.toFixed(0) : pts.toFixed(4);
+  });
+  document.getElementById('saveBtn').addEventListener('click', ()=>{
+    const pair = document.getElementById('f_pair').value;
+    const pnl = document.getElementById('f_pnl').value;
+    if(!pair || pnl===''){ showToast('পেয়ার এবং পিএনএল অবশ্যই দিতে হবে'); return; }
+    const prev = ui.editingId ? DB.trades.find(t=>t.id===ui.editingId) : null;
+    const trade = {
+      id: ui.editingId || uid(),
+      date: document.getElementById('f_date').value,
+      time: document.getElementById('f_time').value,
+      pair, direction: ui.formDirection,
+      session: document.getElementById('f_session').value,
+      timeframe: document.getElementById('f_timeframe').value,
+      concepts: [...ui.formConcepts],
+      entry: document.getElementById('f_entry').value,
+      exit: document.getElementById('f_exit').value,
+      sl: document.getElementById('f_sl').value,
+      tp: document.getElementById('f_tp').value,
+      points: document.getElementById('f_points').value,
+      pnl,
+      logic: document.getElementById('f_logic').value,
+      notes: document.getElementById('f_notes').value,
+      screenshot: ui.formScreenshot || null,
+      checklist: {...ui.formChecklist},
+      aiReview: (prev && prev.screenshot===ui.formScreenshot && prev.logic===document.getElementById('f_logic').value) ? prev.aiReview : null,
+      aiReviewAt: (prev && prev.screenshot===ui.formScreenshot && prev.logic===document.getElementById('f_logic').value) ? prev.aiReviewAt : null,
+    };
+    // Risk-multiple (R): how many "risk units" (entry-to-SL distance) were made/lost, useful for average-R analytics
+    const enN = Number(trade.entry), slN = Number(trade.sl), exN = Number(trade.exit), tpN = Number(trade.tp);
+    const riskUnit = Math.abs(enN - slN);
+    if(enN && slN && riskUnit){
+      const sign = trade.direction==='Buy' ? 1 : -1;
+      trade.rAchieved = exN ? Number((((exN - enN) * sign) / riskUnit).toFixed(2)) : null;
+      trade.rPlanned = tpN ? Number((Math.abs(tpN - enN) / riskUnit).toFixed(2)) : null;
+    } else {
+      trade.rAchieved = null; trade.rPlanned = null;
+    }
+    if(ui.editingId){
+      DB.trades = DB.trades.map(t=> t.id===ui.editingId ? trade : t);
+      showToast('ট্রেড আপডেট হয়েছে');
+    }else{
+      DB.trades.push(trade);
+      showToast('নতুন ট্রেড যোগ হয়েছে');
+    }
+    saveDB();
+    ui.editingId=null; ui.formDirection='Buy'; ui.formConcepts=[]; ui.formScreenshot=null; ui.formChecklist={};
+    ui.tab='journal'; render();
+  });
+}
+
+// ---------- Journal ----------
+function journalShellHTML(){
+  const set = DB.settings;
+  return `
+    <div class="h1 disp">জার্নাল</div>
+    <div class="card mb-4">
+      <div class="row" style="flex-wrap:wrap; gap:8px;">
+        <div style="position:relative; flex:1 1 200px;">
+          <span style="position:absolute; left:10px; top:11px; color:var(--faint);">${ICON.search}</span>
+          <input id="searchInput" style="padding-left:32px;" placeholder="পেয়ার, কনসেপ্ট বা লজিক খুঁজুন…" value="${esc(ui.filters.q)}">
+        </div>
+        <select id="filterPair" style="width:140px;"><option value="">সব পেয়ার</option>${set.pairs.map(p=>`<option ${ui.filters.pair===p?'selected':''}>${esc(p)}</option>`).join('')}</select>
+        <select id="filterSession" style="width:160px;"><option value="">সব সেশন</option>${set.sessions.map(s=>`<option ${ui.filters.session===s?'selected':''}>${esc(s)}</option>`).join('')}</select>
+        <select id="filterResult" style="width:130px;">
+          <option value="">সব ফলাফল</option>
+          <option value="win" ${ui.filters.result==='win'?'selected':''}>উইন</option>
+          <option value="loss" ${ui.filters.result==='loss'?'selected':''}>লস</option>
+          <option value="be" ${ui.filters.result==='be'?'selected':''}>ব্রেকইভেন</option>
+        </select>
+      </div>
+    </div>
+    <div id="tradesList"></div>
+  `;
+}
+function bindJournalFilterEvents(){
+  document.getElementById('searchInput').addEventListener('input', e=>{ ui.filters.q = e.target.value; renderTradesList(); });
+  document.getElementById('filterPair').addEventListener('change', e=>{ ui.filters.pair = e.target.value; renderTradesList(); });
+  document.getElementById('filterSession').addEventListener('change', e=>{ ui.filters.session = e.target.value; renderTradesList(); });
+  document.getElementById('filterResult').addEventListener('change', e=>{ ui.filters.result = e.target.value; renderTradesList(); });
+}
+function getFilteredTrades(){
+  return [...DB.trades].sort((a,b)=> (b.date+b.time).localeCompare(a.date+a.time)).filter(t=>{
+    if(ui.filters.pair && t.pair!==ui.filters.pair) return false;
+    if(ui.filters.session && t.session!==ui.filters.session) return false;
+    if(ui.filters.result && resultOf(t.pnl)!==ui.filters.result) return false;
+    if(ui.filters.q){
+      const q = ui.filters.q.toLowerCase();
+      const hay = [t.pair, t.logic, t.notes, ...(t.concepts||[])].join(' ').toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+function resultBadge(pnl){
+  const r = resultOf(pnl);
+  const map = { win:['var(--profit)','উইন',ICON.trendUp], loss:['var(--loss)','লস',ICON.trendDown], be:['var(--muted)','ব্রেকইভেন',ICON.minus] };
+  const [color,label,icon] = map[r];
+  return `<span style="color:${color}; font-size:11.5px; display:inline-flex; align-items:center; gap:4px; font-weight:600;">${icon}${label}</span>`;
+}
+function renderTradesList(){
+  const list = document.getElementById('tradesList');
+  const trades = getFilteredTrades();
+  if(!trades.length){ list.innerHTML = `<div class="card empty">কোনো ট্রেড পাওয়া যায়নি। "নতুন ট্রেড" থেকে প্রথম এন্ট্রি যোগ করুন।</div>`; return; }
+  list.innerHTML = trades.map(t=>{
+    const r = resultOf(t.pnl);
+    const borderColor = r==='win' ? 'var(--profit)' : r==='loss' ? 'var(--loss)' : 'var(--faint)';
+    const isOpen = ui.expandedId === t.id;
+    return `
+    <div class="trade-card" style="border-left:3px solid ${borderColor}">
+      <div class="trade-head" data-toggle="${t.id}">
+        <div>
+          <div class="row">
+            <span style="font-weight:700; font-size:14.5px;">${esc(t.pair)||'—'}</span>
+            <span class="pill">${t.direction==='Buy'?'বাই':'সেল'}</span>
+          </div>
+          <div class="mono" style="font-size:11.5px; color:var(--faint); margin-top:4px;">${esc(t.date)} · ${esc(t.time)}${t.timeframe?` · ${esc(t.timeframe)}`:''}</div>
+        </div>
+        <div class="row" style="gap:16px;">
+          <div style="text-align:right;">
+            <div class="mono" style="font-size:16px; font-weight:700; color:${borderColor}">${Number(t.pnl)>=0?'+':''}${fmtNum(t.pnl)}</div>
+            <div class="mono" style="font-size:11px;">${Number(t.points)>=0?'+':''}${fmtNum(t.points,1)} pts</div>
+          </div>
+          ${resultBadge(t.pnl)}
+          <span style="color:var(--faint)">${isOpen?ICON.chevronUp:ICON.chevronDown}</span>
+        </div>
+      </div>
+      ${isOpen ? `
+      <div class="trade-body">
+        <div class="grid grid-4" style="margin:12px 0;">
+          <div><div class="f-label">সেশন</div>${esc(t.session)||'—'}</div>
+          <div><div class="f-label">এন্ট্রি</div><span class="mono">${esc(t.entry)||'—'}</span></div>
+          <div><div class="f-label">এক্সিট</div><span class="mono">${esc(t.exit)||'—'}</span></div>
+          <div><div class="f-label">SL / TP</div><span class="mono">${esc(t.sl)||'—'} / ${esc(t.tp)||'—'}</span></div>
+          <div><div class="f-label">R (রিস্ক-মাল্টিপল)</div><span class="mono" style="color:${t.rAchieved==null?'var(--faint)':t.rAchieved>=0?'var(--profit)':'var(--loss)'}">${t.rAchieved==null?'—':(t.rAchieved>=0?'+':'')+t.rAchieved+'R'}</span></div>
+        </div>
+        ${(t.concepts||[]).length ? `<div class="mb-3"><div class="f-label">কনসেপ্ট</div><div class="wrap-chips" style="margin-top:6px;">${t.concepts.map(c=>`<span class="chip" style="cursor:default; font-size:11px;">${esc(c)}</span>`).join('')}</div></div>` : ''}
+        ${t.logic ? `<div class="mb-3"><div class="f-label">এন্ট্রির লজিক</div><div style="line-height:1.6;">${esc(t.logic)}</div></div>` : ''}
+        ${t.notes ? `<div class="mb-3"><div class="f-label">নোট</div><div style="line-height:1.6; color:var(--muted);">${esc(t.notes)}</div></div>` : ''}
+        ${t.screenshot ? `<div class="mb-3"><div class="f-label">চার্ট স্ক্রিনশট</div><img class="shot-thumb" style="width:100%; height:auto; max-height:260px; object-fit:contain; background:var(--surface2); border-radius:9px; margin-top:6px;" src="${t.screenshot}" data-lightbox="${t.id}"></div>` : ''}
+        <div class="row" style="margin-top:6px; flex-wrap:wrap;">
+          <button class="btn ghost" data-edit="${t.id}" style="font-size:12px; padding:7px 12px;">${ICON.pencil} এডিট</button>
+          <button class="btn ghost loss-text" data-del="${t.id}" style="font-size:12px; padding:7px 12px;">${ICON.trash} মুছুন</button>
+          <button class="btn ghost" data-ai="${t.id}" style="font-size:12px; padding:7px 12px; ${ui.aiLoadingId===t.id?'opacity:.6; pointer-events:none;':''}">
+            ${ui.aiLoadingId===t.id ? `<span class="spin"></span> রিভিউ হচ্ছে…` : `${ICON.sparkle} ${t.aiReview?'আবার এআই রিভিউ':'এআই রিভিউ নিন'}`}
+          </button>
+        </div>
+        ${t.aiReview ? `
+        <div class="ai-box">
+          <div class="ai-head">${ICON.sparkle} এআই রিভিউ</div>
+          <div class="ai-text">${esc(t.aiReview)}</div>
+          ${t.aiReviewAt ? `<div class="ai-meta">${new Date(t.aiReviewAt).toLocaleString('bn-BD')}</div>` : ''}
+        </div>` : ''}
+      </div>` : ''}
+    </div>`;
+  }).join('');
+
+  list.querySelectorAll('[data-toggle]').forEach(el=>{
+    el.addEventListener('click', ()=>{ const id=el.dataset.toggle; ui.expandedId = ui.expandedId===id ? null : id; renderTradesList(); });
+  });
+  list.querySelectorAll('[data-edit]').forEach(el=>{
+    el.addEventListener('click', (e)=>{ e.stopPropagation(); ui.editingId = el.dataset.edit; ui.tab='new'; render(); });
+  });
+  list.querySelectorAll('[data-del]').forEach(el=>{
+    el.addEventListener('click', (e)=>{ e.stopPropagation(); DB.trades = DB.trades.filter(t=>t.id!==el.dataset.del); saveDB(); showToast('ট্রেড মুছে ফেলা হয়েছে'); renderTradesList(); });
+  });
+  list.querySelectorAll('[data-lightbox]').forEach(el=>{
+    el.addEventListener('click', (e)=>{ e.stopPropagation(); openLightbox(el.src); });
+  });
+  list.querySelectorAll('[data-ai]').forEach(el=>{
+    el.addEventListener('click', (e)=>{ e.stopPropagation(); requestAiReview(el.dataset.ai); });
+  });
+}
+
+// ---------- AI trade review ----------
+// Uses the built-in Claude API bridge available inside this artifact/chat environment
+// (no key needed here). If this file is hosted elsewhere outside Claude.ai, this call
+// will need your own Anthropic API key wired in to keep working.
+async function requestAiReview(tradeId){
+  const t = DB.trades.find(x=>x.id===tradeId);
+  if(!t) return;
+  ui.aiLoadingId = tradeId;
+  renderTradesList();
+  try{
+    const promptText = `তুমি একজন অভিজ্ঞ ট্রেডিং মেন্টর। নিচের ট্রেডটি বাংলায় সংক্ষেপে (প্রায় ১০০-১৫০ শব্দ) রিভিউ করো। উত্তরে দুইটা অংশ রাখো: "ভালো দিক" এবং "উন্নতির জায়গা / ভুল"। রিস্ক ম্যানেজমেন্ট (স্টপ লস আছে কিনা), এন্ট্রি লজিক কতটা স্পষ্ট, এবং ফলাফলের সাথে লজিকের সামঞ্জস্য আছে কিনা — এগুলো বিবেচনা করো। শুধু বাংলায় লিখবে, কোনো ভূমিকা ছাড়া সরাসরি রিভিউ দাও।
+
+পেয়ার: ${t.pair}
+দিক: ${t.direction}
+সেশন: ${t.session||'উল্লেখ নেই'}
+টাইমফ্রেম: ${t.timeframe||'উল্লেখ নেই'}
+কনসেপ্ট: ${(t.concepts||[]).join(', ')||'উল্লেখ নেই'}
+এন্ট্রি: ${t.entry||'—'} | এক্সিট: ${t.exit||'—'} | SL: ${t.sl||'দেওয়া হয়নি'} | TP: ${t.tp||'—'}
+পয়েন্ট: ${t.points||'—'} | পিএনএল: ${t.pnl}
+এন্ট্রির লজিক: ${t.logic||'কিছু লেখা হয়নি'}
+নোট: ${t.notes||'নেই'}`;
+
+    const content = [{ type:'text', text: promptText }];
+    if(t.screenshot){
+      const base64 = t.screenshot.split(',')[1];
+      content.push({ type:'image', source:{ type:'base64', media_type:'image/jpeg', data: base64 } });
+    }
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        messages: [{ role: "user", content }]
+      })
+    });
+    const data = await response.json();
+    const text = (data.content || []).map(c=>c.text||'').join('\n').trim();
+    if(!text) throw new Error('empty response');
+    t.aiReview = text;
+    t.aiReviewAt = Date.now();
+    saveDB();
+  }catch(err){
+    showToast('এআই রিভিউ ব্যর্থ হয়েছে, আবার চেষ্টা করুন');
+  }finally{
+    ui.aiLoadingId = null;
+    renderTradesList();
+  }
+}
+
+// Summarizes the most recent trades together (patterns across trades, not one at a time)
+async function requestAiSummary(){
+  if(DB.trades.length < 3){ showToast('সামারির জন্য অন্তত ৩টা ট্রেড দরকার'); return; }
+  ui.summaryLoading = true;
+  renderMain();
+  try{
+    const recent = [...DB.trades].sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time)).slice(0,20);
+    const lines = recent.map(t=>
+      `- ${t.date} | ${t.pair} ${t.direction} | ফলাফল: ${resultOf(t.pnl)} (${t.pnl}) | সেশন: ${t.session||'—'} | কনসেপ্ট: ${(t.concepts||[]).join('/')||'—'} | SL দেওয়া: ${t.sl?'হ্যাঁ':'না'} | লজিক: ${(t.logic||'লেখা হয়নি').slice(0,120)}`
+    ).join('\n');
+    const promptText = `তুমি একজন অভিজ্ঞ ট্রেডিং মেন্টর। নিচে একজন ট্রেডারের সাম্প্রতিক ${recent.length}টা ট্রেডের সারাংশ দেওয়া আছে। এগুলো একসাথে বিশ্লেষণ করে বাংলায় লেখো:
+১) সার্বিকভাবে উন্নতি হচ্ছে নাকি অবনতি (সংক্ষেপে)
+২) সবচেয়ে বড় ২-৩টা পুনরাবৃত্ত ভুল/দুর্বলতার প্যাটার্ন
+৩) পরের সপ্তাহে ঠিক কী কী করা উচিত — ৩টা নির্দিষ্ট অ্যাকশন আইটেম
+মোট ১৫০-২০০ শব্দের মধ্যে রাখো, ভূমিকা ছাড়া সরাসরি লেখো।
+
+ট্রেডসমূহ:
+${lines}`;
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: promptText }]
+      })
+    });
+    const data = await response.json();
+    const text = (data.content || []).map(c=>c.text||'').join('\n').trim();
+    if(!text) throw new Error('empty response');
+    DB.settings.lastSummary = text;
+    DB.settings.lastSummaryAt = Date.now();
+    saveDB();
+  }catch(err){
+    showToast('সামারি তৈরি ব্যর্থ হয়েছে, আবার চেষ্টা করুন');
+  }finally{
+    ui.summaryLoading = false;
+    renderMain();
+  }
+}
+
+// ---------- Settings ----------
+function settingsHTML(){
+  const s = DB.settings;
+  const group = (title, key, items) => `
+    <div class="card">
+      <div class="f-label" style="margin-bottom:12px;">${title}</div>
+      <div class="wrap-chips mb-3" data-list="${key}">
+        ${items.map(it=>`<span class="chip" style="cursor:default;">${esc(it)} <span class="settings-x" data-remove="${key}" data-value="${esc(it)}">${ICON.x}</span></span>`).join('') || `<span style="color:var(--faint); font-size:12.5px;">কোনো আইটেম নেই</span>`}
+      </div>
+      <div class="row">
+        <input placeholder="নতুন আইটেম যোগ করুন…" data-input="${key}">
+        <button class="btn" data-add="${key}">${ICON.plus}</button>
+      </div>
+    </div>`;
+  let sizeKB = 0;
+  try{ sizeKB = Math.round((new Blob([JSON.stringify(DB)]).size)/1024); }catch(e){}
+  return `
+    <div class="h1 disp">সেটিংস</div>
+    <div style="font-size:12.5px; color:var(--faint); margin-bottom:18px;">নিজের প্রয়োজন অনুযায়ী পেয়ার, কনসেপ্ট, সেশন ও টাইমফ্রেম কাস্টমাইজ করুন।</div>
+    <div class="grid grid-2 mb-4">
+      ${group('পেয়ার','pairs',s.pairs)}
+      ${group('সেশন','sessions',s.sessions)}
+      ${group('কনসেপ্ট / স্ট্র্যাটেজি','concepts',s.concepts)}
+      ${group('টাইমফ্রেম','timeframes',s.timeframes)}
+      ${group('প্রি-ট্রেড চেকলিস্ট','checklist',s.checklist)}
+    </div>
+    <div class="card mb-4">
+      <div class="f-label" style="margin-bottom:8px;">ব্যাকআপ (এক্সপোর্ট / ইমপোর্ট)</div>
+      <div style="font-size:12.5px; line-height:1.6; color:var(--muted); margin-bottom:12px;">
+        যেহেতু ডেটা শুধু এই ব্রাউজারেই থাকে, নিয়মিত এক্সপোর্ট করে ফাইলটা সেভ রাখা ভালো — ব্রাউজার ক্যাশ মুছে গেলেও ডেটা ফিরিয়ে আনতে পারবেন (ইমপোর্ট দিয়ে)।
+      </div>
+      <div class="row" style="flex-wrap:wrap;">
+        <button class="btn ghost" id="exportBtn">${ICON.save} এক্সপোর্ট (JSON)</button>
+        <button class="btn ghost" id="importBtn">${ICON.book} ইমপোর্ট</button>
+        <input type="file" accept="application/json" id="importFile" style="display:none;">
+      </div>
+    </div>
+    <div class="card mb-4">
+      <div class="f-label" style="margin-bottom:8px;">দৈনিক ম্যাক্স-লস লিমিট (ঐচ্ছিক)</div>
+      <div style="font-size:12.5px; color:var(--muted); margin-bottom:10px;">এই সীমা ছাড়ালে "নতুন ট্রেড" ও ড্যাশবোর্ডে একটা সতর্কতা দেখানো হবে — ওভারট্রেডিং/রিভেঞ্জ ট্রেডিং ঠেকাতে সাহায্য করবে।</div>
+      <input type="number" step="any" id="dailyLossLimit" value="${esc(s.dailyLossLimit||'')}" placeholder="যেমন: 50">
+    </div>
+    <div class="card mb-4">
+      <div class="f-label" style="margin-bottom:8px;">ডেটা কোথায় থাকে?</div>
+      <div style="font-size:12.5px; line-height:1.7; color:var(--muted);">
+        সব ট্রেড, স্ক্রিনশট আর এআই রিভিউ শুধু এই ব্রাউজারের <b style="color:var(--text)">localStorage</b>-এ (এই ডিভাইসেই) সংরক্ষিত হয় — কোনো সার্ভারে বা ক্লাউডে যায় না। তাই:
+        <br>· ব্রাউজারের ডেটা/ক্যাশ মুছলে বা অন্য ডিভাইস/ব্রাউজারে গেলে এই ডেটা দেখা যাবে না।
+        <br>· প্রোফাইল (${esc(session.profile||'—')}) অনুযায়ী আলাদা করে রাখা হয়, কিন্তু পিন কোনো সত্যিকারের নিরাপদ লগইন না — এটা শুধু এই ডিভাইসে হালকা লক।
+        <br>· ব্রাউজার প্রতি সাধারণত ৫-১০MB জায়গা থাকে, তাই অনেক স্ক্রিনশট জমলে জায়গা ফুরিয়ে যেতে পারে (এখন ব্যবহৃত: প্রায় <span class="mono">${sizeKB}KB</span>)।
+      </div>
+    </div>
+    <div class="card">
+      <div class="f-label" style="margin-bottom:8px;">প্রোফাইল</div>
+      <div class="row" style="justify-content:space-between;">
+        <div style="font-size:13px;">লগইন করা আছে: <b>${esc(session.profile||'')}</b></div>
+        <button class="btn ghost" id="settingsLogoutBtn">${ICON.logout} লগআউট / পরিবর্তন</button>
+      </div>
+    </div>
+  `;
+}
+function bindSettingsEvents(){
+  const logoutBtn = document.getElementById('settingsLogoutBtn');
+  if(logoutBtn) logoutBtn.addEventListener('click', ()=>{ session.unlocked = false; render(); });
+
+  const limitInput = document.getElementById('dailyLossLimit');
+  if(limitInput){
+    limitInput.addEventListener('change', ()=>{
+      DB.settings.dailyLossLimit = limitInput.value;
+      saveDB();
+      showToast('লিমিট সেভ হয়েছে');
+    });
+  }
+
+  const exportBtn = document.getElementById('exportBtn');
+  if(exportBtn){
+    exportBtn.addEventListener('click', ()=>{
+      const blob = new Blob([JSON.stringify(DB, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `trade-ledger-${session.profile}-${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      showToast('এক্সপোর্ট হয়েছে');
+    });
+  }
+  const importBtn = document.getElementById('importBtn');
+  const importFile = document.getElementById('importFile');
+  if(importBtn) importBtn.addEventListener('click', ()=> importFile.click());
+  if(importFile){
+    importFile.addEventListener('change', (e)=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try{
+          const parsed = JSON.parse(reader.result);
+          if(!Array.isArray(parsed.trades)) throw new Error('bad format');
+          DB = { trades: parsed.trades, settings: {...DEFAULT_SETTINGS, ...(parsed.settings||{})} };
+          saveDB();
+          showToast('ইমপোর্ট সফল হয়েছে');
+          renderMain();
+        }catch(err){ showToast('ফাইলটা পড়া যায়নি, সঠিক এক্সপোর্ট করা JSON কিনা দেখুন'); }
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  document.querySelectorAll('[data-add]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const key = btn.dataset.add;
+      const input = document.querySelector(`[data-input="${key}"]`);
+      const v = input.value.trim();
+      if(!v || DB.settings[key].includes(v)) return;
+      DB.settings[key].push(v);
+      saveDB();
+      renderMain();
+    });
+  });
+  document.querySelectorAll('[data-input]').forEach(input=>{
+    input.addEventListener('keydown', e=>{
+      if(e.key==='Enter'){ e.preventDefault(); document.querySelector(`[data-add="${input.dataset.input}"]`).click(); }
+    });
+  });
+  document.querySelectorAll('[data-remove]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const key = el.dataset.remove, val = el.dataset.value;
+      DB.settings[key] = DB.settings[key].filter(x=>x!==val);
+      saveDB();
+      renderMain();
+    });
+  });
+}
+
+render();
+</script>
+</body>
+</html>
