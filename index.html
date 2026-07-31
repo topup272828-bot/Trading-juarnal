@@ -16,22 +16,31 @@
     font-family:'Hind Siliguri','Inter',sans-serif; -webkit-tap-highlight-color:transparent; }
   .disp{ font-family:'Space Grotesk','Hind Siliguri',sans-serif; }
   .mono{ font-family:'JetBrains Mono',monospace; font-variant-numeric:tabular-nums; }
-  #app{ display:flex; min-height:100vh; }
-  aside{ width:78px; flex-shrink:0; border-right:1px solid var(--border); padding:14px 8px;
-    display:flex; flex-direction:column; align-items:center; position:sticky; top:0; height:100vh; }
-  @media(min-width:640px){ aside{ width:210px; align-items:stretch; padding:18px 14px; } }
-  .brand{ font-weight:700; font-size:15px; text-align:center; margin-bottom:22px; letter-spacing:-.01em; display:none; }
-  @media(min-width:640px){ .brand{ display:block; text-align:left; } }
-  .brand small{ display:block; color:var(--faint); font-size:10.5px; font-weight:400; margin-top:3px; }
-  nav{ display:flex; flex-direction:column; gap:6px; width:100%; }
-  .navitem{ display:flex; align-items:center; justify-content:center; gap:9px; padding:11px 6px;
-    border-radius:9px; cursor:pointer; color:var(--muted); font-size:13px; font-weight:500; }
-  @media(min-width:640px){ .navitem{ justify-content:flex-start; padding:10px 12px; } }
+  #app{ display:flex; flex-direction:column; min-height:100vh; }
+  header.topbar{ display:flex; align-items:center; gap:10px; padding:10px 14px;
+    border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--bg); z-index:15; }
+  .menu-box{ width:42px; height:42px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    border:1px solid var(--border); border-radius:10px; cursor:pointer; color:var(--muted); position:relative; }
+  .menu-box:active, .menu-box.open{ background:var(--surface2); color:var(--amber); border-color:var(--amber); }
+  .tabs-box{ flex:1; display:flex; gap:4px; overflow-x:auto; background:var(--surface);
+    border:1px solid var(--border); border-radius:11px; padding:5px; scrollbar-width:none; }
+  .tabs-box::-webkit-scrollbar{ display:none; }
+  nav{ display:contents; }
+  .navitem{ display:flex; align-items:center; justify-content:center; gap:6px; padding:9px 8px;
+    border-radius:8px; cursor:pointer; color:var(--muted); font-size:12.5px; font-weight:500;
+    white-space:nowrap; flex:1 0 auto; }
   .navitem:active{ background:var(--surface2); }
-  .navitem.active{ color:var(--amber); background:rgba(214,162,76,.1); }
+  .navitem.active{ color:var(--amber); background:rgba(214,162,76,.14); }
   .navitem span.lbl{ display:none; }
-  @media(min-width:640px){ .navitem span.lbl{ display:inline; } }
-  main{ flex:1; padding:16px; max-width:920px; }
+  @media(min-width:420px){ .navitem span.lbl{ display:inline; } }
+  .menu-dropdown{ position:fixed; top:60px; left:14px; background:var(--surface2); border:1px solid var(--border);
+    border-radius:10px; padding:6px; min-width:190px; z-index:30; box-shadow:0 10px 30px rgba(0,0,0,.45);
+    display:none; }
+  .menu-dropdown.show{ display:block; }
+  .menu-dropdown .navitem{ justify-content:flex-start; padding:10px 12px; }
+  .menu-dropdown .navitem span.lbl{ display:inline; }
+  .menu-dropdown .brand-sub{ padding:6px 10px 8px; font-size:11px; color:var(--faint); border-bottom:1px solid var(--border); margin-bottom:4px; }
+  main{ flex:1; padding:16px; max-width:920px; width:100%; margin:0 auto; }
   @media(min-width:640px){ main{ padding:28px; } }
   .h1{ font-size:19px; font-weight:700; margin-bottom:16px; }
   .card{ background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; }
@@ -54,7 +63,7 @@
   .btn{ background:var(--amber); color:#14110A; border:none; border-radius:8px; padding:10px 16px;
     font-weight:600; font-size:13.5px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
   .btn.ghost{ background:transparent; border:1px solid var(--border); color:var(--text); }
-  .btn.loss-text{ color:var(--loss); }
+  .loss-text{ color:var(--loss); }
   .chip{ border:1px solid var(--border); background:var(--surface2); color:var(--muted); border-radius:999px;
     padding:7px 13px; font-size:12.5px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
   .chip.on{ background:rgba(214,162,76,.14); border-color:var(--amber); color:var(--amber); }
@@ -85,13 +94,33 @@
   .bar-fill{ height:100%; }
   svg.eqchart{ width:100%; height:200px; display:block; }
 
-  /* Signup / profile gate */
-  .gate-screen{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
-  .gate-card{ width:100%; max-width:360px; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:26px 22px; }
-  .gate-title{ font-size:19px; font-weight:700; margin-bottom:4px; }
-  .gate-sub{ font-size:12.5px; color:var(--faint); margin-bottom:20px; line-height:1.5; }
-
-  /* Screenshot upload / thumbnails */
+  /* Print (A4 journal report) */
+  .print-only{ display:none; }
+  #printArea{ background:#fff; color:#14161b; font-family:'Hind Siliguri','Inter',sans-serif; }
+  #printArea .p-header{ display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2.5px solid #14161b; padding-bottom:10px; margin-bottom:16px; }
+  #printArea .p-title{ font-size:21px; font-weight:700; font-family:'Space Grotesk','Hind Siliguri',sans-serif; }
+  #printArea .p-sub{ font-size:11px; color:#555; margin-top:3px; }
+  #printArea .p-meta{ text-align:right; font-size:10.5px; color:#444; line-height:1.6; }
+  #printArea .p-stats{ display:flex; gap:8px; margin-bottom:16px; }
+  #printArea .p-stat{ flex:1; border:1px solid #cfd3da; border-radius:6px; padding:7px 9px; }
+  #printArea .p-stat .l{ font-size:9px; color:#666; text-transform:uppercase; letter-spacing:.03em; }
+  #printArea .p-stat .v{ font-size:14.5px; font-weight:700; margin-top:2px; font-family:'JetBrains Mono',monospace; }
+  #printArea table{ width:100%; border-collapse:collapse; font-size:9.8px; }
+  #printArea thead{ display:table-header-group; }
+  #printArea th{ text-align:left; background:#eef0f3; border:1px solid #cfd3da; padding:5px 6px; font-size:9px; text-transform:uppercase; letter-spacing:.02em; color:#333; }
+  #printArea td{ border:1px solid #dde0e5; padding:4.5px 6px; font-family:'JetBrains Mono',monospace; }
+  #printArea td.txt{ font-family:'Hind Siliguri','Inter',sans-serif; }
+  #printArea tbody tr{ page-break-inside:avoid; }
+  #printArea tfoot td{ font-weight:700; background:#f2f3f5; }
+  #printArea .p-win{ color:#0a7a4a; }
+  #printArea .p-loss{ color:#c0362c; }
+  #printArea .p-foot{ margin-top:16px; font-size:9.5px; color:#888; text-align:center; border-top:1px solid #dde0e5; padding-top:8px; }
+  @media print{
+    html, body{ background:#fff !important; }
+    body > *:not(#printArea){ display:none !important; }
+    #printArea{ display:block !important; }
+    @page{ size:A4; margin:14mm 12mm; }
+  }
   .shot-drop{ border:1.5px dashed var(--border); border-radius:10px; padding:18px; text-align:center;
     color:var(--muted); font-size:12.5px; cursor:pointer; }
   .shot-drop:hover{ border-color:var(--amber); color:var(--amber); }
@@ -126,6 +155,7 @@
 <body>
 <div id="app"></div>
 <div class="toast" id="toast"></div>
+<div id="printArea" class="print-only"></div>
 
 <script>
 // ---------- Icons (minimal inline SVG) ----------
@@ -150,30 +180,37 @@ const ICON = {
   image: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>',
   sparkle: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/><circle cx="12" cy="12" r="2.5"/></svg>',
   logout: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
+  menu: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>',
+  user: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+  printer: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>',
 };
 
-// ---------- Profiles (local sign up / switch — NOT cloud accounts) ----------
-// Everything here lives only inside this browser's localStorage. There is no server,
-// so a "profile" just separates data + gives a light local PIN lock; it does not sync
-// between devices or browsers, and is not a security-grade login.
-const PROFILES_KEY = "tj_profiles_v1";
-const ACTIVE_PROFILE_KEY = "tj_active_profile_v1";
-function loadProfiles(){ try{ return JSON.parse(localStorage.getItem(PROFILES_KEY)) || []; }catch(e){ return []; } }
-function saveProfiles(list){ localStorage.setItem(PROFILES_KEY, JSON.stringify(list)); }
+// ---------- Local data profile (no login/PIN — single local profile per browser) ----------
+// Everything lives only inside this browser's localStorage. There is no server and no
+// password; opening the page goes straight into the app. Old installs that used to have
+// named profiles or a PIN are migrated into this one fixed profile automatically.
+const FIXED_PROFILE = "আমার জার্নাল";
 function dataKeyFor(name){ return "tj_data_v1__" + name; }
 
-let session = { profile: null, unlocked: false };
+let session = { profile: FIXED_PROFILE, unlocked: true };
 (function initSession(){
-  // migrate very old single-profile data (before profiles existed) into a default profile
+  const fixedKey = dataKeyFor(FIXED_PROFILE);
+  if(localStorage.getItem(fixedKey)) return; // already migrated / already in use
+
+  // migrate very old single-profile data (before profiles existed at all)
   const legacy = localStorage.getItem("tj_data_v1");
-  const profiles = loadProfiles();
-  if(legacy && !profiles.length){
-    profiles.push({ name:"আমার একাউন্ট", pin:"" });
-    saveProfiles(profiles);
-    localStorage.setItem(dataKeyFor("আমার একাউন্ট"), legacy);
-  }
-  const active = localStorage.getItem(ACTIVE_PROFILE_KEY);
-  if(active && loadProfiles().some(p=>p.name===active)) session.profile = active;
+  if(legacy){ localStorage.setItem(fixedKey, legacy); return; }
+
+  // migrate data from the old named-profile + PIN system, if any exists
+  try{
+    const oldProfiles = JSON.parse(localStorage.getItem("tj_profiles_v1")) || [];
+    const activeName = localStorage.getItem("tj_active_profile_v1");
+    const pick = (activeName && oldProfiles.find(p=>p.name===activeName)) || oldProfiles[0];
+    if(pick){
+      const raw = localStorage.getItem(dataKeyFor(pick.name));
+      if(raw) localStorage.setItem(fixedKey, raw);
+    }
+  }catch(e){}
 })();
 
 // ---------- Data ----------
@@ -186,9 +223,7 @@ const DEFAULT_SETTINGS = {
   dailyLossLimit: '',
 };
 
-let DB = { trades: [], settings: {...DEFAULT_SETTINGS} };
 function loadDB(){
-  if(!session.profile) return { trades: [], settings: {...DEFAULT_SETTINGS} };
   try{
     const raw = localStorage.getItem(dataKeyFor(session.profile));
     if(raw){
@@ -198,14 +233,32 @@ function loadDB(){
   }catch(e){}
   return { trades: [], settings: {...DEFAULT_SETTINGS} };
 }
+let DB = loadDB();
 function saveDB(){
-  if(!session.profile) return;
   try{
     localStorage.setItem(dataKeyFor(session.profile), JSON.stringify(DB));
     const s = document.getElementById('savebar'); if(s) s.textContent = "সেভ হয়েছে ✓ · " + new Date().toLocaleTimeString('bn-BD');
   }catch(e){
     const s = document.getElementById('savebar'); if(s) s.textContent = "সেভ ব্যর্থ হয়েছে (স্টোরেজ ভর্তি হয়ে থাকতে পারে)";
   }
+}
+function exportData(){
+  const blob = new Blob([JSON.stringify(DB, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `trade-ledger-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  showToast('এক্সপোর্ট হয়েছে');
+}
+function resetAllData(){
+  if(!confirm('আপনি কি নিশ্চিত? এই ডিভাইসের সব ট্রেড ডেটা স্থায়ীভাবে মুছে যাবে। আগে এক্সপোর্ট করে রাখার পরামর্শ দেওয়া হচ্ছে।')) return;
+  DB = { trades: [], settings: {...DEFAULT_SETTINGS} };
+  saveDB();
+  showToast('সব ডেটা মুছে ফেলা হয়েছে');
+  ui.tab='dashboard';
+  render();
 }
 
 const ui = {
@@ -249,108 +302,27 @@ function resultOf(pnl){ const v = Number(pnl); if(Number.isNaN(v) || v===0) retu
 function esc(s){ return (s??'').toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(window.__toastT); window.__toastT=setTimeout(()=>t.classList.remove('show'),2000); }
 
-// ---------- Signup / Login gate ----------
-function gateHTML(){
-  const profiles = loadProfiles();
-  if(session.profile && !session.unlocked){
-    const p = profiles.find(x=>x.name===session.profile);
-    return `
-    <div class="gate-screen"><div class="gate-card">
-      <div class="gate-title disp">স্বাগতম, ${esc(session.profile)}</div>
-      <div class="gate-sub">${p && p.pin ? 'চালিয়ে যেতে আপনার ৪-সংখ্যার পিন দিন' : 'চালিয়ে যেতে নিচে চাপুন'}</div>
-      ${p && p.pin ? `<div class="mb-3"><input type="password" inputmode="numeric" maxlength="4" id="pinInput" placeholder="••••"></div>` : ''}
-      <button class="btn" id="unlockBtn" style="width:100%; justify-content:center;">প্রবেশ করুন</button>
-      <div class="row" style="margin-top:14px; justify-content:center;">
-        <span style="font-size:12px; color:var(--faint); cursor:pointer;" id="switchProfileBtn">অন্য প্রোফাইলে যান</span>
-      </div>
-    </div></div>`;
-  }
-  return `
-  <div class="gate-screen"><div class="gate-card">
-    <div class="gate-title disp">ট্রেড লেজারে সাইন আপ করুন</div>
-    <div class="gate-sub">এই ডেটা শুধু এই ব্রাউজারেই স্থানীয়ভাবে (localStorage) সংরক্ষিত হয় — কোনো সার্ভারে যায় না, তাই ডিভাইস/ব্রাউজার পাল্টালে ডেটা যাবে না। পিন সেট করলে শুধু এই ডিভাইসে একটা হালকা লক হিসেবে কাজ করবে।</div>
-    <div class="space-y">
-      <div><label class="f-label">আপনার নাম</label><input id="suName" placeholder="যেমন: রাহাত"></div>
-      <div><label class="f-label">পিন (ঐচ্ছিক, ৪ সংখ্যা)</label><input id="suPin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></div>
-      <button class="btn" id="signupBtn" style="width:100%; justify-content:center;">${ICON.plus} সাইন আপ / শুরু করুন</button>
-    </div>
-    ${profiles.length ? `<div style="margin-top:16px; border-top:1px solid var(--border); padding-top:14px;">
-      <div class="f-label" style="margin-bottom:8px;">বিদ্যমান প্রোফাইল</div>
-      ${profiles.map(p=>`<div class="chip" style="margin:0 6px 6px 0;" data-login="${esc(p.name)}">${esc(p.name)}</div>`).join('')}
-    </div>` : ''}
-  </div></div>`;
-}
-function bindGateEvents(){
-  const signupBtn = document.getElementById('signupBtn');
-  if(signupBtn){
-    signupBtn.addEventListener('click', ()=>{
-      const name = document.getElementById('suName').value.trim();
-      const pin = document.getElementById('suPin').value.trim();
-      if(!name){ showToast('নাম দিন'); return; }
-      const profiles = loadProfiles();
-      if(profiles.some(p=>p.name===name)){ showToast('এই নামে প্রোফাইল আগে থেকেই আছে, লগইন করুন'); return; }
-      if(pin && !/^\d{4}$/.test(pin)){ showToast('পিন অবশ্যই ৪ সংখ্যার হতে হবে'); return; }
-      profiles.push({ name, pin });
-      saveProfiles(profiles);
-      session.profile = name; session.unlocked = true;
-      localStorage.setItem(ACTIVE_PROFILE_KEY, name);
-      DB = loadDB();
-      ui.tab='dashboard';
-      render();
-    });
-  }
-  document.querySelectorAll('[data-login]').forEach(el=>{
-    el.addEventListener('click', ()=>{
-      session.profile = el.dataset.login; session.unlocked = false;
-      localStorage.setItem(ACTIVE_PROFILE_KEY, session.profile);
-      render();
-    });
-  });
-  const unlockBtn = document.getElementById('unlockBtn');
-  if(unlockBtn){
-    unlockBtn.addEventListener('click', ()=>{
-      const profiles = loadProfiles();
-      const p = profiles.find(x=>x.name===session.profile);
-      const pinEl = document.getElementById('pinInput');
-      if(p && p.pin){
-        if(!pinEl || pinEl.value !== p.pin){ showToast('পিন ভুল হয়েছে'); return; }
-      }
-      session.unlocked = true;
-      DB = loadDB();
-      ui.tab='dashboard';
-      render();
-    });
-  }
-  const switchBtn = document.getElementById('switchProfileBtn');
-  if(switchBtn){
-    switchBtn.addEventListener('click', ()=>{
-      session.profile = null; session.unlocked = false;
-      localStorage.removeItem(ACTIVE_PROFILE_KEY);
-      render();
-    });
-  }
-}
-
 // ---------- Render root ----------
 function render(){
   const app = document.getElementById('app');
-  if(!session.profile || !session.unlocked){
-    app.innerHTML = gateHTML();
-    bindGateEvents();
-    return;
-  }
   app.innerHTML = `
-    <aside>
-      <div class="brand">ট্রেড লেজার<small id="savebar">স্থানীয়ভাবে সংরক্ষিত</small></div>
-      <nav>
-        ${navItem('dashboard', ICON.dashboard, 'ড্যাশবোর্ড')}
-        ${navItem('new', ICON.plus, 'নতুন ট্রেড')}
-        ${navItem('journal', ICON.book, 'জার্নাল')}
-        ${navItem('settings', ICON.settings, 'সেটিংস')}
-      </nav>
-      <div style="flex:1"></div>
-      <div class="navitem" data-logout="1" style="margin-top:10px;">${ICON.logout}<span class="lbl">${esc(session.profile)} · লগআউট</span></div>
-    </aside>
+    <header class="topbar">
+      <div class="menu-box" id="menuToggle">${ICON.menu}</div>
+      <div class="tabs-box">
+        <nav>
+          ${navItem('dashboard', ICON.dashboard, 'ড্যাশবোর্ড')}
+          ${navItem('new', ICON.plus, 'নতুন ট্রেড')}
+          ${navItem('journal', ICON.book, 'জার্নাল')}
+          ${navItem('settings', ICON.settings, 'সেটিংস')}
+        </nav>
+      </div>
+    </header>
+    <div class="menu-dropdown" id="menuDropdown">
+      <div class="brand-sub" id="savebar">ট্রেড লেজার · স্থানীয়ভাবে সংরক্ষিত</div>
+      <div class="navitem" data-quick-print="1">${ICON.printer} জার্নাল প্রিন্ট করুন</div>
+      <div class="navitem" data-quick-export="1">${ICON.save} এক্সপোর্ট (JSON)</div>
+      <div class="navitem loss-text" data-quick-reset="1">${ICON.trash} সব ডেটা মুছুন</div>
+    </div>
     <main id="main"></main>
     <div class="lightbox" id="lightbox"><div class="lightbox-close" id="lightboxClose">${ICON.x}</div><img id="lightboxImg" src=""></div>
   `;
@@ -361,9 +333,31 @@ function render(){
       ui.tab = t; render();
     });
   });
-  document.querySelector('[data-logout]').addEventListener('click', ()=>{
-    session.unlocked = false;
-    render();
+  const menuToggle = document.getElementById('menuToggle');
+  const menuDropdown = document.getElementById('menuDropdown');
+  menuToggle.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    menuDropdown.classList.toggle('show');
+    menuToggle.classList.toggle('open');
+  });
+  document.addEventListener('click', (e)=>{
+    if(!menuDropdown.contains(e.target) && e.target!==menuToggle){
+      menuDropdown.classList.remove('show');
+      menuToggle.classList.remove('open');
+    }
+  });
+  document.querySelector('[data-quick-print]').addEventListener('click', ()=>{
+    menuDropdown.classList.remove('show'); menuToggle.classList.remove('open');
+    ui.tab='journal'; render();
+    setTimeout(openPrintPreview, 60);
+  });
+  document.querySelector('[data-quick-export]').addEventListener('click', ()=>{
+    menuDropdown.classList.remove('show'); menuToggle.classList.remove('open');
+    exportData();
+  });
+  document.querySelector('[data-quick-reset]').addEventListener('click', ()=>{
+    menuDropdown.classList.remove('show'); menuToggle.classList.remove('open');
+    resetAllData();
   });
   document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
   document.getElementById('lightbox').addEventListener('click', (e)=>{ if(e.target.id==='lightbox') closeLightbox(); });
@@ -840,7 +834,10 @@ function bindFormEvents(){
 function journalShellHTML(){
   const set = DB.settings;
   return `
-    <div class="h1 disp">জার্নাল</div>
+    <div class="flex-between mb-4" style="align-items:center;">
+      <div class="h1 disp" style="margin-bottom:0;">জার্নাল</div>
+      <button class="btn ghost" id="printJournalBtn">${ICON.printer} প্রিন্ট (A4)</button>
+    </div>
     <div class="card mb-4">
       <div class="row" style="flex-wrap:wrap; gap:8px;">
         <div style="position:relative; flex:1 1 200px;">
@@ -865,6 +862,8 @@ function bindJournalFilterEvents(){
   document.getElementById('filterPair').addEventListener('change', e=>{ ui.filters.pair = e.target.value; renderTradesList(); });
   document.getElementById('filterSession').addEventListener('change', e=>{ ui.filters.session = e.target.value; renderTradesList(); });
   document.getElementById('filterResult').addEventListener('change', e=>{ ui.filters.result = e.target.value; renderTradesList(); });
+  const printBtn = document.getElementById('printJournalBtn');
+  if(printBtn) printBtn.addEventListener('click', openPrintPreview);
 }
 function getFilteredTrades(){
   return [...DB.trades].sort((a,b)=> (b.date+b.time).localeCompare(a.date+a.time)).filter(t=>{
@@ -884,6 +883,69 @@ function resultBadge(pnl){
   const map = { win:['var(--profit)','উইন',ICON.trendUp], loss:['var(--loss)','লস',ICON.trendDown], be:['var(--muted)','ব্রেকইভেন',ICON.minus] };
   const [color,label,icon] = map[r];
   return `<span style="color:${color}; font-size:11.5px; display:inline-flex; align-items:center; gap:4px; font-weight:600;">${icon}${label}</span>`;
+}
+// ---------- Print (A4 journal report) ----------
+function openPrintPreview(){
+  const trades = [...DB.trades].sort((a,b)=> (a.date+a.time).localeCompare(b.date+b.time));
+  if(!trades.length){ showToast('প্রিন্ট করার মতো কোনো ট্রেড নেই'); return; }
+  document.getElementById('printArea').innerHTML = printableTradesHTML(trades);
+  setTimeout(()=> window.print(), 80);
+}
+function printableTradesHTML(trades){
+  const s = computeStats();
+  const first = trades[0], last = trades[trades.length-1];
+  const rows = trades.map((t,i)=>{
+    const r = resultOf(t.pnl);
+    const cls = r==='win' ? 'p-win' : r==='loss' ? 'p-loss' : '';
+    const label = r==='win' ? 'উইন' : r==='loss' ? 'লস' : 'ব্রেকইভেন';
+    return `<tr>
+      <td>${i+1}</td>
+      <td class="txt">${esc(t.date)}</td>
+      <td class="txt">${esc(t.pair)||'—'}</td>
+      <td class="txt">${t.direction==='Buy'?'বাই':'সেল'}</td>
+      <td class="txt">${esc(t.session)||'—'}</td>
+      <td>${esc(t.entry)||'—'}</td>
+      <td>${esc(t.sl)||'—'}</td>
+      <td>${esc(t.tp)||'—'}</td>
+      <td class="${cls}">${Number(t.pnl)>=0?'+':''}${fmtNum(t.pnl)}</td>
+      <td>${Number(t.points)>=0?'+':''}${fmtNum(t.points,1)}</td>
+      <td>${t.rAchieved==null?'—':(t.rAchieved>=0?'+':'')+fmtNum(t.rAchieved,2)+'R'}</td>
+      <td class="txt ${cls}">${label}</td>
+    </tr>`;
+  }).join('');
+  return `
+    <div class="p-header">
+      <div>
+        <div class="p-title">ট্রেড লেজার — জার্নাল রিপোর্ট</div>
+        <div class="p-sub">ব্যক্তিগত ট্রেডিং জার্নাল · ${esc(first.date)} — ${esc(last.date)}</div>
+      </div>
+      <div class="p-meta">
+        মোট এন্ট্রি: ${trades.length}টি<br>
+        প্রিন্ট তারিখ: ${new Date().toLocaleDateString('bn-BD',{year:'numeric',month:'long',day:'numeric'})}
+      </div>
+    </div>
+    <div class="p-stats">
+      <div class="p-stat"><div class="l">মোট পিএনএল</div><div class="v">${s.totalPnl>=0?'+':''}${fmtNum(s.totalPnl)}</div></div>
+      <div class="p-stat"><div class="l">উইন রেট</div><div class="v">${fmtNum(s.winRate,1)}% (${s.wins}W/${s.losses}L)</div></div>
+      <div class="p-stat"><div class="l">মোট ট্রেড</div><div class="v">${s.total}</div></div>
+      <div class="p-stat"><div class="l">মোট পয়েন্ট</div><div class="v">${s.totalPoints>=0?'+':''}${fmtNum(s.totalPoints,1)}</div></div>
+      <div class="p-stat"><div class="l">ম্যাক্স ড্রডাউন</div><div class="v">${s.maxDD>0?'-':''}${fmtNum(s.maxDD)}</div></div>
+      <div class="p-stat"><div class="l">গড় R</div><div class="v">${s.avgR===null?'—':(s.avgR>=0?'+':'')+fmtNum(s.avgR,2)+'R'}</div></div>
+    </div>
+    <table>
+      <thead><tr>
+        <th>#</th><th>তারিখ</th><th>পেয়ার</th><th>দিক</th><th>সেশন</th><th>এন্ট্রি</th><th>SL</th><th>TP</th><th>পিএনএল</th><th>পয়েন্ট</th><th>R</th><th>ফলাফল</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr>
+        <td colspan="8">সর্বমোট</td>
+        <td>${s.totalPnl>=0?'+':''}${fmtNum(s.totalPnl)}</td>
+        <td>${s.totalPoints>=0?'+':''}${fmtNum(s.totalPoints,1)}</td>
+        <td colspan="2"></td>
+      </tr></tfoot>
+    </table>
+    <div class="p-foot">ট্রেড লেজার অ্যাপ থেকে তৈরি · ডেটা শুধুমাত্র স্থানীয়ভাবে (এই ডিভাইসে) সংরক্ষিত</div>
+  `;
 }
 function renderTradesList(){
   const list = document.getElementById('tradesList');
@@ -1093,28 +1155,17 @@ function settingsHTML(){
       <div style="font-size:12.5px; color:var(--muted); margin-bottom:10px;">এই সীমা ছাড়ালে "নতুন ট্রেড" ও ড্যাশবোর্ডে একটা সতর্কতা দেখানো হবে — ওভারট্রেডিং/রিভেঞ্জ ট্রেডিং ঠেকাতে সাহায্য করবে।</div>
       <input type="number" step="any" id="dailyLossLimit" value="${esc(s.dailyLossLimit||'')}" placeholder="যেমন: 50">
     </div>
-    <div class="card mb-4">
+    <div class="card">
       <div class="f-label" style="margin-bottom:8px;">ডেটা কোথায় থাকে?</div>
       <div style="font-size:12.5px; line-height:1.7; color:var(--muted);">
-        সব ট্রেড, স্ক্রিনশট আর এআই রিভিউ শুধু এই ব্রাউজারের <b style="color:var(--text)">localStorage</b>-এ (এই ডিভাইসেই) সংরক্ষিত হয় — কোনো সার্ভারে বা ক্লাউডে যায় না। তাই:
-        <br>· ব্রাউজারের ডেটা/ক্যাশ মুছলে বা অন্য ডিভাইস/ব্রাউজারে গেলে এই ডেটা দেখা যাবে না।
-        <br>· প্রোফাইল (${esc(session.profile||'—')}) অনুযায়ী আলাদা করে রাখা হয়, কিন্তু পিন কোনো সত্যিকারের নিরাপদ লগইন না — এটা শুধু এই ডিভাইসে হালকা লক।
+        সব ট্রেড, স্ক্রিনশট আর এআই রিভিউ শুধু এই ব্রাউজারের <b style="color:var(--text)">localStorage</b>-এ (এই ডিভাইসেই) সংরক্ষিত হয় — কোনো সার্ভারে বা ক্লাউডে যায় না, কোনো পাসওয়ার্ড/লগইনও লাগে না। তাই:
+        <br>· ব্রাউজারের ডেটা/ক্যাশ মুছলে বা অন্য ডিভাইস/ব্রাউজারে গেলে এই ডেটা দেখা যাবে না — তাই নিয়মিত এক্সপোর্ট করে রাখা ভালো।
         <br>· ব্রাউজার প্রতি সাধারণত ৫-১০MB জায়গা থাকে, তাই অনেক স্ক্রিনশট জমলে জায়গা ফুরিয়ে যেতে পারে (এখন ব্যবহৃত: প্রায় <span class="mono">${sizeKB}KB</span>)।
-      </div>
-    </div>
-    <div class="card">
-      <div class="f-label" style="margin-bottom:8px;">প্রোফাইল</div>
-      <div class="row" style="justify-content:space-between;">
-        <div style="font-size:13px;">লগইন করা আছে: <b>${esc(session.profile||'')}</b></div>
-        <button class="btn ghost" id="settingsLogoutBtn">${ICON.logout} লগআউট / পরিবর্তন</button>
       </div>
     </div>
   `;
 }
 function bindSettingsEvents(){
-  const logoutBtn = document.getElementById('settingsLogoutBtn');
-  if(logoutBtn) logoutBtn.addEventListener('click', ()=>{ session.unlocked = false; render(); });
-
   const limitInput = document.getElementById('dailyLossLimit');
   if(limitInput){
     limitInput.addEventListener('change', ()=>{
@@ -1125,18 +1176,7 @@ function bindSettingsEvents(){
   }
 
   const exportBtn = document.getElementById('exportBtn');
-  if(exportBtn){
-    exportBtn.addEventListener('click', ()=>{
-      const blob = new Blob([JSON.stringify(DB, null, 2)], {type:'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `trade-ledger-${session.profile}-${new Date().toISOString().slice(0,10)}.json`;
-      document.body.appendChild(a); a.click(); a.remove();
-      URL.revokeObjectURL(url);
-      showToast('এক্সপোর্ট হয়েছে');
-    });
-  }
+  if(exportBtn) exportBtn.addEventListener('click', exportData);
   const importBtn = document.getElementById('importBtn');
   const importFile = document.getElementById('importFile');
   if(importBtn) importBtn.addEventListener('click', ()=> importFile.click());
